@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Proxy FAQs</title>
+    <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      #backbutton {
+        background-color: #0a3161;
+            color: #ffffff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>
+      CORS Proxy FAQs
+    </h1>
+    <p>
+      dm @tomfc on real for more questions
+    </p><br>
+    <button id="backbutton" onclick="window.location.href='schedule.html'">
+      Back
+      </button> <br>
+    <p>
+      <strong>1. What is a CORS proxy, and why is it needed?</strong>
+    </p><br>
+    <p>
+      Modern web browsers restrict websites from accessing data from another domain due to security rules called CORS (Cross-Origin Resource Sharing). A CORS proxy acts as a middleman that fetches the data on your behalf, bypassing those restrictions so your browser can display the MLB schedule data.
+    </p><br><br>
+    <p>
+      <strong>2. Is using a CORS proxy safe?</strong>
+    </p><br>
+    <p>
+      Yes! The CORS proxy we use is designed only to pass data through from the original source to your browser. It does not store, alter, or share your personal information. Think of it like a mail carrier delivering your package—it just moves data from point A to point B.
+    </p><br><br>
+    <p>
+      <strong>3. Why do I need to allow or enable the CORS proxy?</strong>
+    </p><br>
+    <p>
+      Since your browser blocks direct requests to external MLB data sources, allowing the CORS proxy is the only way we can fetch real-time schedule info directly within the website. Without it, you wouldn't be able to see the schedule data.
+    </p><br><br>
+    <p>
+      <strong>4. Will the CORS proxy slow down my browser or internet?</strong>
+    </p><br>
+    <p>
+      Not at all. The proxy simply routes your data and typically responds within milliseconds. It's optimized for speed and doesn’t run any heavy code in your browser.
+    </p><br><br>
+    <p>
+      <strong>5. Is my personal data exposed when using a CORS proxy?</strong>
+    </p><br>
+    <p>
+      No. The proxy only handles the public MLB schedule request. It does not access your private information, login details, or any browser history.
+    </p><br><br>
+    <p>
+      <strong>6. Can I disable the proxy if I want to?</strong>
+    </p><br>
+    <p>
+      Yes, but disabling it will prevent the MLB schedule data from loading. The proxy is only active while using this specific feature, and you’re always in control.
+    </p>
+  </body>
+</html>
