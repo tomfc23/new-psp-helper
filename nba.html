@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA PSP helper</title>
+    <style>
+          :root {
+    --primary: #6f42c1;
+    --secondary: #ff4444;
+    --background: #000000;
+    --card: #1a1a1a;
+    --text: #d3d3d3;
+    --input-bg: #333333;
+    --input-border: #555555;
+    --focus-color: #007BFF;
+    --hover-primary: #5a32a3;
+    --highlight-bg: #2a2a2a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+body {
+    background-color: var(--background);
+    color: var(--text);
+    padding: 20px;
+    text-align: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    color: var(--primary);
+    margin-bottom: 10px;
+}
+
+.description {
+    margin-bottom: 20px;
+    color: #999;
+}
+
+.input-section {
+    background-color: var(--card);
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    margin-bottom: 30px;
+    border: 2px solid #333;
+}
+
+.game-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.game-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.vs-label {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+input, select {
+    flex: 1;
+    margin: 5px;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 25px;
+    border: 2px solid var(--input-border);
+    background-color: var(--input-bg);
+    color: var(--text);
+    transition: border-color 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: var(--focus-color);
+    outline: none;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+button {
+    margin: 5px;
+    padding: 15px;
+    font-size: 16px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    background-color: var(--primary);
+    color: white;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--hover-primary);
+}
+
+button:focus {
+    border-color: var(--focus-color);
+    outline: none;
+}
+
+button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+#addGameButton {
+    background-color: #4CAF50;
+}
+
+#addGameButton:hover {
+    background-color: #45a049;
+}
+
+#clearButton {
+    background-color: var(--secondary);
+    margin-left: 10px;
+}
+
+#clearButton:hover {
+    background-color: #cc0000;
+}
+
+#modeToggle {
+    margin-top: 20px;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.team-stats {
+    background-color: var(--card);
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid #333;
+}
+
+.team-name {
+    color: var(--primary);
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.stat-item {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.stat-label {
+    font-weight: bold;
+    color: #aaa;
+}
+
+.stat-value {
+    font-weight: bold;
+}
+
+.summary-section {
+    background-color: var(--card);
+    padding: 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid #333;
+    margin-top: 30px;
+    margin-bottom: 20px;
+}
+
+.summary-title {
+    color: var(--primary);
+    margin-bottom: 15px;
+    font-size: 24px;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 10px;
+}
+
+.highlight {
+    background-color: var(--highlight-bg);
+    padding: 3px;
+    border-radius: 3px;
+}
+
+.loading {
+    text-align: center;
+    margin: 20px 0;
+    color: var(--primary);
+    font-weight: bold;
+}
+
+.error {
+    color: var(--secondary);
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* Rankings */
+.good-rank {
+    color: #4CAF50;
+}
+
+.average-rank {
+    color: #ffc107;
+}
+
+.bad-rank {
+    color: #dc3545;
+}
+
+#red { color: #dc3545; }
+#orange { color: #ffc107; }
+#green { color: #28a745; }
+
+.explDiv {
+    display: none;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: var(--highlight-bg);
+    border-radius: 25px;
+    border: 1px solid #444;
+}
+
+.data-status {
+    background-color: #1a2332;
+    padding: 10px;
+    border-radius: 25px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    color: #6bb6ff;
+    border: 1px solid #2a3a4a;
+}
+
+.custom-names {
+    display: none;
+}
+
+.real-odds {
+    display: none;
+}
+
+a {
+    color: #858bf0;
+}
+
+.highest-ev {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .game-input {
+        flex-direction: column;
+    }
+    
+    .vs-label {
+        margin: 5px 0;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+
+    .button-group {
+        flex-direction: column;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NBA PSP Helper</h1>
+        </header>
+
+        <div class="input-section">
+            <div id="gameInputs" class="game-inputs">
+                <div class="game-input">
+                    <input type="text" class="team-input" placeholder="Enter team (e.g., Cleveland)">
+                    <span class="vs-label">vs</span>
+                    <input type="text" class="team-input" placeholder="Enter team (e.g., Golden State)">
+                </div>
+            </div>
+            <div class="button-group">
+                <button id="addGameButton">Add Game</button>
+                <button id="fetchButton">Get Stats</button>
+                <button id="clearButton">Clear All</button>
+                <button id="explButton" onclick="explain()">
+                  Color Explanation
+              </button>
+              <div class="explDiv">
+              <p>
+                <p id="red">Red:</p> Less than 108.3 points per game  </p>
+              </div>
+          <div class="explDiv">
+              <p>
+                 <p id="orange">Orange:</p> Between 108.3 and 119.7 points per game
+              </p>
+      </div>
+          <div class="explDiv">
+              <p>
+                <p id="green">Green:</p> More than 119.7 points per game 
+              </p>
+      </div>
+            </div>
+            <div id="errorMessage" class="error"></div>
+        </div>
+
+        <div id="loadingIndicator" class="loading" style="display: none;">Loading stats...</div>
+        <div id="statsContainer" class="stats-container"></div>
+        <div id="summarySection" class="summary-section" style="display: none;">
+            <h2 class="summary-title">Worst Teams Summary</h2>
+            <div id="summaryContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // NBA Team Data from the uploaded file
+        // Updated with real 2024 stats
+     function explain() {
+    const explDivs = document.querySelectorAll('.explDiv');
+    
+    explDivs.forEach(div => {
+        const computedStyle = window.getComputedStyle(div);
+        
+        if (computedStyle.display === 'block') {
+            div.style.display = 'none';
+        } else {
+            div.style.display = 'block';
+        }
+    });
+}
+        const nbaTeamData = {
+            // Eastern Conference
+            "Atlanta": {
+                fullName: "Atlanta Hawks",
+                conference: "East",
+                oppPointsFrom3: 42.7,  // Points allowed from 3-pointers
+                oppPointsAllowed: 119.4,  // Total points allowed per game
+                oppAssistsAllowed: 28.3,  // Assists allowed per game
+                oppReboundsAllowed: 52.1,  // Rebounds allowed per game
+            },
+            "Boston": {
+                fullName: "Boston Celtics",
+                conference: "East",
+                oppPointsFrom3: 38.0,
+                oppPointsAllowed: 106.6,
+                oppAssistsAllowed: 23.7,
+                oppReboundsAllowed: 51.9,
+            },
+            "Brooklyn": {
+                fullName: "Brooklyn Nets",
+                conference: "East",
+                oppPointsFrom3: 38.7,
+                oppPointsAllowed: 112.2,
+                oppAssistsAllowed: 27.1,
+                oppReboundsAllowed: 52.5,
+            },
+            "Charlotte": {
+                fullName: "Charlotte Hornets",
+                conference: "East",
+                oppPointsFrom3: 42.5,
+                oppPointsAllowed: 114.2,
+                oppAssistsAllowed: 26.8,
+                oppReboundsAllowed: 53.5,
+            },
+            "Chicago": {
+                fullName: "Chicago Bulls",
+                conference: "East",
+                oppPointsFrom3: 40.9,
+                oppPointsAllowed: 119.2,
+                oppAssistsAllowed: 28.9,
+                oppReboundsAllowed: 54.5,
+            },
+            "Cleveland": {
+                fullName: "Cleveland Cavaliers",
+                conference: "East",
+                oppPointsFrom3: 40.4,
+                oppPointsAllowed: 111.6,
+                oppAssistsAllowed: 25.4,
+                oppReboundsAllowed: 51.8,
+            },
+            "Detroit": {
+                fullName: "Detroit Pistons",
+                conference: "East",
+                oppPointsFrom3: 40.7,
+                oppPointsAllowed: 113.3,
+                oppAssistsAllowed: 24.6,
+                oppReboundsAllowed: 51.3,
+            },
+            "Indiana": {
+                fullName: "Indiana Pacers",
+                conference: "East",
+                oppPointsFrom3: 38.8,
+                oppPointsAllowed: 114.8,
+                oppAssistsAllowed: 25.9,
+                oppReboundsAllowed: 52.9,
+            },
+            "Miami": {
+                fullName: "Miami Heat",
+                conference: "East",
+                oppPointsFrom3: 41.6,
+                oppPointsAllowed: 110.6,
+                oppAssistsAllowed: 26.4,
+                oppReboundsAllowed: 51.1,
+            },
+            "Milwaukee": {
+                fullName: "Milwaukee Bucks",
+                conference: "East",
+                oppPointsFrom3: 41.6,
+                oppPointsAllowed: 112.9,
+                oppAssistsAllowed: 26.5,
+                oppReboundsAllowed: 52.4,
+            },
+            "New York": {
+                fullName: "New York Knicks",
+                conference: "East",
+                oppPointsFrom3: 38.9,
+                oppPointsAllowed: 111.4,
+                oppAssistsAllowed: 24.9,
+                oppReboundsAllowed: 49.6,
+            },
+            "Orlando": {
+                fullName: "Orlando Magic",
+                conference: "East",
+                oppPointsFrom3: 34.1,
+                oppPointsAllowed: 105.3,
+                oppAssistsAllowed: 22.6,
+                oppReboundsAllowed: 51.0,
+            },
+            "Philadelphia": {
+                fullName: "Philadelphia 76ers",
+                conference: "East",
+                oppPointsFrom3: 42.7,
+                oppPointsAllowed: 115.8,
+                oppAssistsAllowed: 28.3,
+                oppReboundsAllowed: 53.3,
+            },
+            "Toronto": {
+                fullName: "Toronto Raptors",
+                conference: "East",
+                oppPointsFrom3: 39.5,
+                oppPointsAllowed: 115.2,
+                oppAssistsAllowed: 25.9,
+                oppReboundsAllowed: 53.9,
+            },
+            "Washington": {
+                fullName: "Washington Wizards",
+                conference: "East",
+                oppPointsFrom3: 42.8,
+                oppPointsAllowed: 120.4,
+                oppAssistsAllowed: 28.5,
+                oppReboundsAllowed: 57.1,
+            },
+
+            // Western Conference
+            "Dallas": {
+                fullName: "Dallas Mavericks",
+                conference: "West",
+                oppPointsFrom3: 38.6,
+                oppPointsAllowed: 115.3,
+                oppAssistsAllowed: 27.1,
+                oppReboundsAllowed: 53.3,
+            },
+            "Denver": {
+                fullName: "Denver Nuggets",
+                conference: "West",
+                oppPointsFrom3: 42.2,
+                oppPointsAllowed: 116.4,
+                oppAssistsAllowed: 28.8,
+                oppReboundsAllowed: 49.6,
+            },
+            "Golden State": {
+                fullName: "Golden State Warriors",
+                conference: "West",
+                oppPointsFrom3: 39.1,
+                oppPointsAllowed: 110.0,
+                oppAssistsAllowed: 25.5,
+                oppReboundsAllowed: 52.5,
+            },
+            "Houston": {
+                fullName: "Houston Rockets",
+                conference: "West",
+                oppPointsFrom3: 37.3,
+                oppPointsAllowed: 109.3,
+                oppAssistsAllowed: 23.5,
+                oppReboundsAllowed: 51.0,
+            },
+            "LA": {
+                fullName: "LA Clippers",
+                conference: "West",
+                oppPointsFrom3: 38.5,
+                oppPointsAllowed: 107.8,
+                oppAssistsAllowed: 25.6,
+                oppReboundsAllowed: 49.2,
+            },
+            "Los Angeles": {
+                fullName: "Los Angeles Lakers",
+                conference: "West",
+                oppPointsFrom3: 40.6,
+                oppPointsAllowed: 112.0,
+                oppAssistsAllowed: 27.0,
+                oppReboundsAllowed: 51.5,
+            },
+            "Memphis": {
+                fullName: "Memphis Grizzlies",
+                conference: "West",
+                oppPointsFrom3: 42.2,
+                oppPointsAllowed: 116.9,
+                oppAssistsAllowed: 26.9,
+                oppReboundsAllowed: 52.9,
+            },
+            "Minnesota": {
+                fullName: "Minnesota Timberwolves",
+                conference: "West",
+                oppPointsFrom3: 38.3,
+                oppPointsAllowed: 108.9,
+                oppAssistsAllowed: 24.6,
+                oppReboundsAllowed: 50.7,
+            },
+            "New Orleans": {
+                fullName: "New Orleans Pelicans",
+                conference: "West",
+                oppPointsFrom3: 43.9,
+                oppPointsAllowed: 119.3,
+                oppAssistsAllowed: 28.6,
+                oppReboundsAllowed: 54.0,
+            },
+            "Okla City": {
+                fullName: "Oklahoma City Thunder",
+                conference: "West",
+                oppPointsFrom3: 40.1,
+                oppPointsAllowed: 107.2,
+                oppAssistsAllowed: 24.4,
+                oppReboundsAllowed: 53.9,
+            },
+            "Phoenix": {
+                fullName: "Phoenix Suns",
+                conference: "West",
+                oppPointsFrom3: 42.5,
+                oppPointsAllowed: 116.6,
+                oppAssistsAllowed: 27.3,
+                oppReboundsAllowed: 51.2,
+            },
+            "Portland": {
+                fullName: "Portland Trail Blazers",
+                conference: "West",
+                oppPointsFrom3: 38.1,
+                oppPointsAllowed: 113.9,
+                oppAssistsAllowed: 26.2,
+                oppReboundsAllowed: 52.9,
+            },
+            "Sacramento": {
+                fullName: "Sacramento Kings",
+                conference: "West",
+                oppPointsFrom3: 43.6,
+                oppPointsAllowed: 115.3,
+                oppAssistsAllowed: 27.0,
+                oppReboundsAllowed: 50.1,
+            },
+            "San Antonio": {
+                fullName: "San Antonio Spurs",
+                conference: "West",
+                oppPointsFrom3: 43.1,
+                oppPointsAllowed: 116.7,
+                oppAssistsAllowed: 28.0,
+                oppReboundsAllowed: 53.5,
+            },
+            "Utah": {
+                fullName: "Utah Jazz",
+                conference: "West",
+                oppPointsFrom3: 44.6,
+                oppPointsAllowed: 121.2,
+                oppAssistsAllowed: 29.6,
+                oppReboundsAllowed: 52.4,
+            }
+        };
+
+        // Calculate league averages for reference
+        const calculateLeagueAverages = () => {
+            const teams = Object.values(nbaTeamData);
+            const leagueAverages = {
+                oppPointsFrom3: 0,
+                oppPointsAllowed: 0,
+                oppAssistsAllowed: 0,
+                oppReboundsAllowed: 0
+            };
+            
+            teams.forEach(team => {
+                leagueAverages.oppPointsFrom3 += team.oppPointsFrom3;
+                leagueAverages.oppPointsAllowed += team.oppPointsAllowed;
+                leagueAverages.oppAssistsAllowed += team.oppAssistsAllowed;
+                leagueAverages.oppReboundsAllowed += team.oppReboundsAllowed;
+            });
+            
+            const numTeams = teams.length;
+            return {
+                oppPointsFrom3: leagueAverages.oppPointsFrom3 / numTeams,
+                oppPointsAllowed: leagueAverages.oppPointsAllowed / numTeams,
+                oppAssistsAllowed: leagueAverages.oppAssistsAllowed / numTeams,
+                oppReboundsAllowed: leagueAverages.oppReboundsAllowed / numTeams
+            };
+        };
+
+        const leagueAverages = calculateLeagueAverages();
+
+        // Function to get ranking class based on value comparison to league average
+        const getRankingClass = (value, leagueAvg, isLowerBetter = true) => {
+            const percentDiff = ((value - leagueAvg) / leagueAvg) * 100;
+            
+            if (isLowerBetter) {
+                if (percentDiff < -5) return "good-rank";
+                if (percentDiff > 5) return "bad-rank";
+                return "average-rank";
+            } else {
+                if (percentDiff > 5) return "good-rank";
+                if (percentDiff < -5) return "bad-rank";
+                return "average-rank";
+            }
+        };
+
+        // DOM elements
+        const gameInputs = document.getElementById('gameInputs');
+        const addGameButton = document.getElementById('addGameButton');
+        const fetchButton = document.getElementById('fetchButton');
+        const clearButton = document.getElementById('clearButton');
+        const statsContainer = document.getElementById('statsContainer');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const summarySection = document.getElementById('summarySection');
+        const summaryContent = document.getElementById('summaryContent');
+
+        // Function to add new game input fields
+        const addGameInputField = () => {
+            const gameInputDiv = document.createElement('div');
+            gameInputDiv.className = 'game-input';
+            gameInputDiv.innerHTML = `
+                <input type="text" class="team-input" placeholder="Enter team (e.g., Cleveland)">
+                <span class="vs-label">vs</span>
+                <input type="text" class="team-input" placeholder="Enter team (e.g., Golden State)">
+            `;
+            gameInputs.appendChild(gameInputDiv);
+        };
+
+        // Function to find a team by partial name
+        const findTeamByPartialName = (partialName) => {
+            if (!partialName) return null;
+            
+            const searchTerm = partialName.toLowerCase().trim();
+            
+            // First try direct key match
+            if (nbaTeamData[partialName]) {
+                return {
+                    key: partialName,
+                    data: nbaTeamData[partialName]
+                };
+            }
+            
+            // Special case for Oklahoma City (in the data as "Okla City")
+            if (searchTerm === "oklahoma city" || searchTerm === "oklahoma") {
+                return {
+                    key: "Okla City",
+                    data: nbaTeamData["Okla City"]
+                };
+            }
+            
+            // Then try partial match
+            for (const [key, data] of Object.entries(nbaTeamData)) {
+                if (key.toLowerCase().includes(searchTerm) || 
+                    data.fullName.toLowerCase().includes(searchTerm)) {
+                    return {
+                        key: key,
+                        data: data
+                    };
+                }
+            }
+            
+            return null;
+        };
+
+        // Function to display team stats
+        const displayTeamStats = (teamKey, teamData) => {
+            const teamStatsDiv = document.createElement('div');
+            teamStatsDiv.className = 'team-stats';
+            
+            // Create content for the team stats card
+            teamStatsDiv.innerHTML = `
+                <h2 class="team-name">${teamData.fullName}</h2>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Opponent Points From 3:</span>
+                    <span class="stat-value ${getRankingClass(teamData.oppPointsFrom3, leagueAverages.oppPointsFrom3)}">${teamData.oppPointsFrom3.toFixed(1)}</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Opponent Points Allowed:</span>
+                    <span class="stat-value ${getRankingClass(teamData.oppPointsAllowed, leagueAverages.oppPointsAllowed)}">${teamData.oppPointsAllowed.toFixed(1)}</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Opponent Rebounds Allowed:</span>
+                    <span class="stat-value ${getRankingClass(teamData.oppReboundsAllowed, leagueAverages.oppReboundsAllowed)}">${teamData.oppReboundsAllowed.toFixed(1)}</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Opponent Assists Allowed:</span>
+                    <span class="stat-value ${getRankingClass(teamData.oppAssistsAllowed, leagueAverages.oppAssistsAllowed)}">${teamData.oppAssistsAllowed.toFixed(1)}</span>
+                </div>
+                
+                <div class="stat-item" style="margin-top: 15px;">
+                    <span class="stat-label">Conference:</span>
+                    <span class="stat-value">${teamData.conference}</span>
+                </div>
+            `;
+            
+            return teamStatsDiv;
+        };
+
+        // Function to find worst team for each stat from the displayed teams
+        const findWorstTeams = (displayedTeams) => {
+            if (displayedTeams.length === 0) return null;
+            
+            // Initialize worst teams
+            let worstTeams = {
+                oppPointsFrom3: { team: null, value: 0 },
+                oppPointsAllowed: { team: null, value: 0 },
+                oppAssistsAllowed: { team: null, value: 0 },
+                oppReboundsAllowed: { team: null, value: 0 }
+            };
+            
+            // Find the worst in each category
+            displayedTeams.forEach(teamInfo => {
+                const teamData = teamInfo.data;
+                
+                if (!worstTeams.oppPointsFrom3.team || teamData.oppPointsFrom3 > worstTeams.oppPointsFrom3.value) {
+                    worstTeams.oppPointsFrom3 = { team: teamData.fullName, value: teamData.oppPointsFrom3 };
+                }
+                
+                if (!worstTeams.oppPointsAllowed.team || teamData.oppPointsAllowed > worstTeams.oppPointsAllowed.value) {
+                    worstTeams.oppPointsAllowed = { team: teamData.fullName, value: teamData.oppPointsAllowed };
+                }
+                
+                if (!worstTeams.oppAssistsAllowed.team || teamData.oppAssistsAllowed > worstTeams.oppAssistsAllowed.value) {
+                    worstTeams.oppAssistsAllowed = { team: teamData.fullName, value: teamData.oppAssistsAllowed };
+                }
+                
+                if (!worstTeams.oppReboundsAllowed.team || teamData.oppReboundsAllowed > worstTeams.oppReboundsAllowed.value) {
+                    worstTeams.oppReboundsAllowed = { team: teamData.fullName, value: teamData.oppReboundsAllowed };
+                }
+            });
+            
+            return worstTeams;
+        };
+
+        // Function to display the worst teams summary
+        const displayWorstTeamsSummary = (worstTeams) => {
+            if (!worstTeams) return;
+            
+            summaryContent.innerHTML = `
+                <div class="stat-item">
+                    <span class="stat-label">Worst at Defending 3-Pointers:</span>
+                    <span class="stat-value bad-rank">${worstTeams.oppPointsFrom3.team} (${worstTeams.oppPointsFrom3.value.toFixed(1)} pts)</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Worst at Points Allowed:</span>
+                    <span class="stat-value bad-rank">${worstTeams.oppPointsAllowed.team} (${worstTeams.oppPointsAllowed.value.toFixed(1)} pts)</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Worst at Defending Rebounds:</span>
+                    <span class="stat-value bad-rank">${worstTeams.oppReboundsAllowed.team} (${worstTeams.oppReboundsAllowed.value.toFixed(1)} reb)</span>
+                </div>
+                
+                <div class="stat-item">
+                    <span class="stat-label">Worst at Defending Assists:</span>
+                    <span class="stat-value bad-rank">${worstTeams.oppAssistsAllowed.team} (${worstTeams.oppAssistsAllowed.value.toFixed(1)} ast)</span>
+                </div>
+                
+                <p style="margin-top: 15px; font-style: italic;">These teams have the worst defensive metrics among the selected teams.</p>
+            `;
+            
+            summarySection.style.display = 'block';
+        };
+
+        // Function to fetch and display stats
+        const fetchStats = () => {
+            // Clear previous results and errors
+            statsContainer.innerHTML = '';
+            errorMessage.textContent = '';
+            summarySection.style.display = 'none';
+            
+            // Get all team inputs
+            const teamInputs = document.querySelectorAll('.team-input');
+            if (teamInputs.length === 0) {
+                errorMessage.textContent = 'Please add at least one game.';
+                return;
+            }
+            
+            let anyTeamEntered = false;
+            for (const input of teamInputs) {
+                if (input.value.trim()) {
+                    anyTeamEntered = true;
+                    break;
+                }
+            }
+            
+            if (!anyTeamEntered) {
+                errorMessage.textContent = 'Please enter at least one team name.';
+                return;
+            }
+            
+            // Show loading indicator
+            loadingIndicator.style.display = 'block';
+            
+            // Simulate API call with a slight delay
+            setTimeout(() => {
+                let foundTeams = [];
+                
+                // Process all team inputs
+                for (let i = 0; i < teamInputs.length; i++) {
+                    const teamSearch = teamInputs[i].value.trim();
+                    if (!teamSearch) continue;
+                    
+                    const teamResult = findTeamByPartialName(teamSearch);
+                    if (teamResult) {
+                        const teamStatsDiv = displayTeamStats(teamResult.key, teamResult.data);
+                        statsContainer.appendChild(teamStatsDiv);
+                        foundTeams.push(teamResult);
+                    } else {
+                        errorMessage.textContent += `Team "${teamSearch}" not found. `;
+                    }
+                }
+                
+                // Find and display worst teams if we have multiple teams
+                if (foundTeams.length > 1) {
+                    const worstTeams = findWorstTeams(foundTeams);
+                    displayWorstTeamsSummary(worstTeams);
+                }
+                
+                // Hide loading indicator
+                loadingIndicator.style.display = 'none';
+            }, 500); // Simulate 500ms of loading time
+        };
+
+        // Function to clear the form and results
+        const clearForm = () => {
+            // Clear all inputs except the first one
+            const allGameInputs = document.querySelectorAll('.game-input');
+            
+            // Remove all but the first game input
+            while (gameInputs.children.length > 1) {
+                gameInputs.removeChild(gameInputs.lastChild);
+            }
+            
+            // Clear the values of the first input
+            const firstInputs = allGameInputs[0].querySelectorAll('input');
+            firstInputs.forEach(input => input.value = '');
+            
+            // Clear results
+            statsContainer.innerHTML = '';
+            errorMessage.textContent = '';
+            summarySection.style.display = 'none';
+        };
+
+        // Event listeners
+        addGameButton.addEventListener('click', addGameInputField);
+        fetchButton.addEventListener('click', fetchStats);
+        clearButton.addEventListener('click', clearForm);
+
+        // Allow pressing Enter to submit
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchStats();
+        });
+    </script>
+</body>
+</html>
