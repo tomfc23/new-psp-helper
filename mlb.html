@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLB PSP Matchups</title>
+  <style>
+    .loading-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .loading-indicator.hidden {
+      display: none;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #3498db;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .data-status {
+      margin-top: 10px;
+      font-style: italic;
+      color: #777;
+    }
+
+    .data-status.updated {
+      color: #2ecc71;
+      font-weight: bold;
+    }
+
+    .refresh-btn {
+      margin-top: 10px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .refresh-btn:hover {
+      background-color: #2980b9;
+    }
+
+    .last-updated {
+      font-style: italic;
+      color: #777;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    :root {
+      --primary: #0a3161;
+      --secondary: #e81828;
+      --light: #f5f5f5;
+      --dark: #333;
+      --success: #4caf50;
+      --card-bg: #fff;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      background-color: var(--light);
+      color: var(--dark);
+    }
+    
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+    }
+    
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      padding: 1.5rem;
+    }
+    
+    .input-section {
+      margin-bottom: 2rem;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    
+    .btn {
+      background-color: var(--secondary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+      margin-right: 10px;
+    }
+    
+    .btn:hover {
+      background-color: #c41420;
+    }
+    
+    .results-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    
+    @media (max-width: 768px) {
+      .results-section {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    .result-card {
+      background-color: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+    
+    .result-card h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--secondary);
+      padding-bottom: 0.5rem;
+    }
+    
+    .top-pick {
+      color: var(--secondary);
+      font-weight: bold;
+    }
+    
+    .recommendation-list {
+      list-style-type: none;
+    }
+    
+    .recommendation-list li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .recommendation-list li:last-child {
+      border-bottom: none;
+    }
+    
+    .stat-value {
+      float: right;
+      font-weight: bold;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    #schedulebutton {
+      background-color: #0a3161;
+      color: #ffffff;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      background-color: #fadbd8;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .success-message {
+      color: #27ae60;
+      background-color: #d5f5d5;
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MLB PSP Matchups</h1>
+    <p>designed by @tomfc on real</p> <br>
+    <p>please dm for bug fixes/suggestions</p>
+  </header>
+  
+  <div class="container">
+    <div class="card input-section">
+      <h2>Enter Today's Matchups</h2>
+      
+      <div class="button-group">
+        <button id="schedulebutton" onclick="window.location.href='schedule.html'">
+          Schedule
+        </button>
+        <button id="refreshDataBtn" class="refresh-btn">
+          Refresh MLB Data
+        </button>
+      </div>
+      
+      <div class="loading-indicator hidden" id="loadingIndicator">
+        <div class="spinner"></div>
+        <div class="data-status">Loading latest MLB statistics...</div>
+      </div>
+      
+      <div id="dataStatus" class="data-status"></div>
+      <div id="errorMessage" class="error-message hidden"></div>
+      <div id="successMessage" class="success-message hidden"></div>
+      
+      <p>Paste the matchups in the format: "TEAM1 (Pitcher1) vs. TEAM2 (Pitcher2)"</p>
+      <textarea id="matchupsInput" placeholder="ARI (Corbin Burnes) vs. CHC (Cody Rea)
+KC (Cole Ragans) vs. DET (Jackson Jobe)
+..."></textarea>
+      <button id="analyzeBtn" class="btn">Analyze Matchups</button>
+    </div>
+    
+    <div id="results" class="hidden">
+      <h2>Analysis Results</h2>
+      <div class="results-section">
+        <div class="result-card hidden">
+          <h3>Top Teams for Strikeouts</h3>
+          <ul id="teamStrikeoutsList" class="recommendation-list"></ul>
+        </div>
+        
+        <div class="result-card">
+          <h3>Top Pitchers by Strikeouts</h3>
+          <ul id="pitcherStrikeoutsList" class="recommendation-list"></ul>
+        </div>
+        
+        <div class="result-card">
+          <h3>Highest ERA Pitchers</h3>
+          <ul id="eraList" class="recommendation-list"></ul>
+        </div>
+        
+        <div class="result-card">
+          <h3>Most Hits Allowed</h3>
+          <ul id="hitsAllowedList" class="recommendation-list"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Global data storage
+    let mlbData = {
+      teamStrikeouts: {},
+      pitcherStats: {
+        era: [],
+        strikeouts: [],
+        hitsAllowed: []
+      },
+      lastUpdated: null
+    };
+
+    // Team name mappings
+    const teamMap = {
+      "ARI": "Arizona Diamondbacks",
+      "ATL": "Atlanta Braves",
+      "BAL": "Baltimore Orioles",
+      "BOS": "Boston Red Sox",
+      "CHC": "Chicago Cubs",
+      "CIN": "Cincinnati Reds",
+      "CLE": "Cleveland Guardians",
+      "COL": "Colorado Rockies",
+      "CWS": "Chicago White Sox",
+      "DET": "Detroit Tigers",
+      "HOU": "Houston Astros",
+      "KC": "Kansas City Royals",
+      "LAA": "Los Angeles Angels",
+      "LAD": "Los Angeles Dodgers",
+      "MIA": "Miami Marlins",
+      "MIL": "Milwaukee Brewers",
+      "MIN": "Minnesota Twins",
+      "NYM": "New York Mets",
+      "NYY": "New York Yankees",
+      "OAK": "Oakland Athletics",
+      "PHI": "Philadelphia Phillies",
+      "PIT": "Pittsburgh Pirates",
+      "SD": "San Diego Padres",
+      "SEA": "Seattle Mariners",
+      "SF": "San Francisco Giants",
+      "STL": "St. Louis Cardinals",
+      "TB": "Tampa Bay Rays",
+      "TEX": "Texas Rangers",
+      "TOR": "Toronto Blue Jays",
+      "WSH": "Washington Nationals",
+      "SAC": "Sacramento Athletics"
+    };
+
+    // Function to show/hide loading indicator
+    function showLoading(show) {
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      if (show) {
+        loadingIndicator.classList.remove('hidden');
+      } else {
+        loadingIndicator.classList.add('hidden');
+      }
+    }
+
+    // Function to show error message
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      errorElement.textContent = message;
+      errorElement.classList.remove('hidden');
+      setTimeout(() => {
+        errorElement.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Function to show success message
+    function showSuccess(message) {
+      const successElement = document.getElementById('successMessage');
+      successElement.textContent = message;
+      successElement.classList.remove('hidden');
+      setTimeout(() => {
+        successElement.classList.add('hidden');
+      }, 3000);
+    }
+
+    // Function to update data status
+    function updateDataStatus(message, isUpdated = false) {
+      const statusElement = document.getElementById('dataStatus');
+      statusElement.textContent = message;
+      if (isUpdated) {
+        statusElement.classList.add('updated');
+      } else {
+        statusElement.classList.remove('updated');
+      }
+    }
+
+    // Function to load MLB data from Google Sheets
+    async function loadMLBData() {
+      showLoading(true);
+      updateDataStatus('Loading MLB data...');
+
+      try {
+        const response = await fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vS9-JsIxebevmoDUnyTjzLeNG3nrGj_iZ7T1Q3JM4gO0YNmJe00PDWr8M7Arbe4V4cPecUnvnPMTTDv/pubhtml");
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const allRows = Array.from(doc.querySelectorAll("table tr"));
+
+        // Reset data
+        mlbData.teamStrikeouts = {};
+        mlbData.pitcherStats = {
+          era: [],
+          strikeouts: [],
+          hitsAllowed: []
+        };
+
+        // Parse the data
+        for (const row of allRows) {
+          const cells = Array.from(row.querySelectorAll("td")).map(td =>
+            td.textContent.trim().replace(/\s+/g, " ")
+          );
+          
+          if (cells.length < 11) continue;
+
+          // Team Strikeouts (Column 0, 1)
+          const team = cells[0];
+          const kpg = parseFloat(cells[1]);
+          if (team && !isNaN(kpg)) {
+            mlbData.teamStrikeouts[team] = kpg;
+          }
+
+          // ERA (Column 2, 3, 4)
+          const eraPitcher = cells[2];
+          const eraTeam = cells[3];
+          const eraValue = parseFloat(cells[4]);
+          if (eraPitcher && eraTeam && !isNaN(eraValue)) {
+            mlbData.pitcherStats.era.push({ 
+              name: eraPitcher, 
+              team: eraTeam, 
+              value: eraValue 
+            });
+          }
+
+          // Strikeouts (Column 5, 6, 7)
+          const kPitcher = cells[5];
+          const kTeam = cells[6];
+          const kValue = parseInt(cells[7]);
+          if (kPitcher && kTeam && !isNaN(kValue)) {
+            mlbData.pitcherStats.strikeouts.push({ 
+              name: kPitcher, 
+              team: kTeam, 
+              value: kValue 
+            });
+          }
+
+          // Hits Allowed (Column 8, 9, 10)
+          const hPitcher = cells[8];
+          const hTeam = cells[9];
+          const hValue = parseInt(cells[10]);
+          if (hPitcher && hTeam && !isNaN(hValue)) {
+            mlbData.pitcherStats.hitsAllowed.push({ 
+              name: hPitcher, 
+              team: hTeam, 
+              value: hValue 
+            });
+          }
+        }
+
+        mlbData.lastUpdated = new Date();
+        
+        showLoading(false);
+        updateDataStatus(`Data updated successfully (${mlbData.lastUpdated.toLocaleString()})`, true);
+        showSuccess('MLB data refreshed successfully!');
+
+        console.log('Loaded MLB Data:', mlbData);
+
+      } catch (error) {
+        console.error('Error loading MLB data:', error);
+        showLoading(false);
+        updateDataStatus('Failed to load data. Using cached data if available.');
+        showError('Failed to load MLB data. Please try again.');
+      }
+    }
+
+    // Helper function to extract team and pitcher from matchup string
+    function parseMatchup(matchupString) {
+      const regex = /([A-Z]+) \(([^)]+)\) vs\. ([A-Z]+) \(([^)]+)\)/;
+      const match = matchupString.match(regex);
+      
+      if (match) {
+        return [
+          { team: match[1], pitcher: match[2] },
+          { team: match[3], pitcher: match[4] }
+        ];
+      }
+      
+      return null;
+    }
+
+    // Helper function to parse all matchups
+    function parseAllMatchups(inputText) {
+      const lines = inputText.trim().split('\n');
+      const matchups = [];
+      
+      lines.forEach(line => {
+        const matchup = parseMatchup(line);
+        if (matchup) {
+          matchups.push(matchup);
+        }
+      });
+      
+      return matchups;
+    }
+
+    // Function to find pitcher data by name
+    function findPitcherData(pitcherName, dataArray) {
+      return dataArray.find(p => p.name === pitcherName);
+    }
+
+    // Function to analyze matchups and return recommendations
+    function analyzeMatchups(matchups) {
+      if (!mlbData.lastUpdated) {
+        showError('No MLB data loaded. Please refresh data first.');
+        return null;
+      }
+
+      // Arrays to store the processed data
+      const teamStrikeoutRecs = [];
+      const pitcherStrikeoutRecs = [];
+      const eraRecs = [];
+      const hitsAllowedRecs = [];
+
+      // Process each matchup
+      matchups.forEach(matchup => {
+        const [team1, team2] = matchup;
+
+        // Process team strikeouts - we want opposing pitcher against high strikeout teams
+        if (mlbData.teamStrikeouts[team1.team] && team2.pitcher !== "TBD") {
+          teamStrikeoutRecs.push({
+            recommendation: `${team2.pitcher} vs ${teamMap[team1.team] || team1.team}`,
+            value: mlbData.teamStrikeouts[team1.team],
+            sortValue: mlbData.teamStrikeouts[team1.team]
+          });
+        }
+
+        if (mlbData.teamStrikeouts[team2.team] && team1.pitcher !== "TBD") {
+          teamStrikeoutRecs.push({
+            recommendation: `${team1.pitcher} vs ${teamMap[team2.team] || team2.team}`,
+            value: mlbData.teamStrikeouts[team2.team],
+            sortValue: mlbData.teamStrikeouts[team2.team]
+          });
+        }
+
+        // Process pitcher strikeouts
+        const pitcher1Strikeouts = findPitcherData(team1.pitcher, mlbData.pitcherStats.strikeouts);
+        if (pitcher1Strikeouts) {
+          pitcherStrikeoutRecs.push({
+            recommendation: `${team1.pitcher} (${team1.team})`,
+            value: pitcher1Strikeouts.value,
+            sortValue: pitcher1Strikeouts.value
+          });
+        }
+
+        const pitcher2Strikeouts = findPitcherData(team2.pitcher, mlbData.pitcherStats.strikeouts);
+        if (pitcher2Strikeouts) {
+          pitcherStrikeoutRecs.push({
+            recommendation: `${team2.pitcher} (${team2.team})`,
+            value: pitcher2Strikeouts.value,
+            sortValue: pitcher2Strikeouts.value
+          });
+        }
+
+        // Process ERA
+        const pitcher1ERA = findPitcherData(team1.pitcher, mlbData.pitcherStats.era);
+        if (pitcher1ERA) {
+          eraRecs.push({
+            recommendation: `Against ${team1.pitcher} (${team1.team})`,
+            value: pitcher1ERA.value,
+            sortValue: pitcher1ERA.value
+          });
+        }
+
+        const pitcher2ERA = findPitcherData(team2.pitcher, mlbData.pitcherStats.era);
+        if (pitcher2ERA) {
+          eraRecs.push({
+            recommendation: `Against ${team2.pitcher} (${team2.team})`,
+            value: pitcher2ERA.value,
+            sortValue: pitcher2ERA.value
+          });
+        }
+
+        // Process Hits Allowed
+        const pitcher1Hits = findPitcherData(team1.pitcher, mlbData.pitcherStats.hitsAllowed);
+        if (pitcher1Hits) {
+          hitsAllowedRecs.push({
+            recommendation: `Against ${team1.pitcher} (${team1.team})`,
+            value: pitcher1Hits.value,
+            sortValue: pitcher1Hits.value
+          });
+        }
+
+        const pitcher2Hits = findPitcherData(team2.pitcher, mlbData.pitcherStats.hitsAllowed);
+        if (pitcher2Hits) {
+          hitsAllowedRecs.push({
+            recommendation: `Against ${team2.pitcher} (${team2.team})`,
+            value: pitcher2Hits.value,
+            sortValue: pitcher2Hits.value
+          });
+        }
+      });
+
+      // Sort all recommendations
+      teamStrikeoutRecs.sort((a, b) => b.sortValue - a.sortValue);
+      pitcherStrikeoutRecs.sort((a, b) => b.sortValue - a.sortValue);
+      eraRecs.sort((a, b) => b.sortValue - a.sortValue);
+      hitsAllowedRecs.sort((a, b) => b.sortValue - a.sortValue);
+
+      return {
+        teamStrikeoutRecs: teamStrikeoutRecs.slice(0, 5),
+        pitcherStrikeoutRecs: pitcherStrikeoutRecs.slice(0, 5),
+        eraRecs: eraRecs.slice(0, 5),
+        hitsAllowedRecs: hitsAllowedRecs.slice(0, 5)
+      };
+    }
+
+    // Function to display recommendations
+    function displayRecommendations(results) {
+      document.getElementById('results').classList.remove('hidden');
+
+      // Display team strikeouts
+      const teamStrikeoutsList = document.getElementById('teamStrikeoutsList');
+      teamStrikeoutsList.innerHTML = '';
+      results.teamStrikeoutRecs.forEach((rec, index) => {
+        const li = document.createElement('li');
+        li.className = index === 0 ? 'top-pick' : '';
+        li.innerHTML = `${rec.recommendation} <span class="stat-value">${rec.value.toFixed(2)} K/game</span>`;
+        teamStrikeoutsList.appendChild(li);
+      });
+
+      // Display pitcher strikeouts
+      const pitcherStrikeoutsList = document.getElementById('pitcherStrikeoutsList');
+      pitcherStrikeoutsList.innerHTML = '';
+      results.pitcherStrikeoutRecs.forEach((rec, index) => {
+        const li = document.createElement('li');
+        li.className = index === 0 ? 'top-pick' : '';
+        li.innerHTML = `${rec.recommendation} <span class="stat-value">${rec.value} K</span>`;
+        pitcherStrikeoutsList.appendChild(li);
+      });
+
+      // Display ERA
+      const eraList = document.getElementById('eraList');
+      eraList.innerHTML = '';
+      results.eraRecs.forEach((rec, index) => {
+        const li = document.createElement('li');
+        li.className = index === 0 ? 'top-pick' : '';
+        li.innerHTML = `${rec.recommendation} <span class="stat-value">${rec.value}</span>`;
+        eraList.appendChild(li);
+      });
+
+      // Display Hits Allowed
+      const hitsAllowedList = document.getElementById('hitsAllowedList');
+      hitsAllowedList.innerHTML = '';
+      results.hitsAllowedRecs.forEach((rec, index) => {
+        const li = document.createElement('li');
+        li.className = index === 0 ? 'top-pick' : '';
+        li.innerHTML = `${rec.recommendation} <span class="stat-value">${rec.value}</span>`;
+        hitsAllowedList.appendChild(li);
+      });
+    }
+
+    // Event listeners
+    document.getElementById('refreshDataBtn').addEventListener('click', loadMLBData);
+
+    document.getElementById('analyzeBtn').addEventListener('click', function() {
+      const inputText = document.getElementById('matchupsInput').value;
+      const matchups = parseAllMatchups(inputText);
+
+      if (matchups.length === 0) {
+        showError('No valid matchups found. Please check your input format.');
+        return;
+      }
+
+      const results = analyzeMatchups(matchups);
+      if (results) {
+        displayRecommendations(results);
+      }
+    });
+
+    // Load data on page load
+    updateDataStatus('Click "Refresh MLB Data" to load the latest statistics');
+    
+    // Auto-load data on page load
+    loadMLBData();
+  });
+  </script>
+</body>
+</html>
