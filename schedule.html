@@ -5,166 +5,333 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MLB PSP Schedule</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary: #6f42c1;
+            --secondary: #ff4444;
+            --background: #000000;
+            --card: #1a1a1a;
+            --text: #d3d3d3;
+            --input-bg: #333333;
+            --input-border: #555555;
+            --focus-color: #007BFF;
+            --hover-primary: #5a32a3;
+            --highlight-bg: #2a2a2a;
+            --success: #4CAF50;
+            --success-hover: #45a049;
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            box-sizing: border-box;
+            font-family: sans-serif;
         }
-        .header {
-            background-color: #0a3161;
-            color: white;
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
             padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
             text-align: center;
+            margin-bottom: 30px;
             position: relative;
         }
-        .header h1 {
-            margin: 0;
-        }
-        .header p {
-            margin: 10px 0 0;
-            font-size: 14px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .input-section h2 {
-            margin-top: 0;
-        }
-        .output-box {
-            width: 100%;
-            min-height: 200px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: monospace;
-            margin-bottom: 20px;
-            resize: vertical;
-        }
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .button {
-            background-color: #e31937;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .button:hover {
-            background-color: #c41230;
-        }
-        .status {
-            font-style: italic;
-            margin-top: 10px;
-            color: #666;
-        }
-        .loading {
-            text-align: center;
-            display: none;
-            margin: 20px 0;
-        }
-        .loading:after {
-            content: '.';
-            animation: dots 1.5s steps(5, end) infinite;
-        }
-        .copy-button {
-            background-color: #4CAF50;
-            margin-top: 10px;
-        }
-        .copy-button:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-        .home-button {
+
+        .back-btn {
             position: absolute;
-            left: 20px;
+            left: 0;
             top: 50%;
             transform: translateY(-50%);
-            background-color: #ffffff;
-            color: #0a3161;
+            background-color: var(--secondary);
+            color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 25px;
             cursor: pointer;
-            font-weight: bold;
+            transition: background-color 0.3s;
             text-decoration: none;
             display: inline-block;
         }
-        .home-button:hover {
-            background-color: #f0f0f0;
-        }
-        .date-picker {
-            margin-bottom: 20px;
-        }
-        .date-picker input {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+
+        .back-btn:hover {
+            background-color: #cc3333;
         }
 
-        @keyframes dots {
-            0%, 20% {
-                color: rgba(0,0,0,0);
-                text-shadow:
-                    .25em 0 0 rgba(0,0,0,0),
-                    .5em 0 0 rgba(0,0,0,0);
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            margin-bottom: 10px;
+            color: #999;
+            font-size: 1rem;
+        }
+
+        .controls {
+            background-color: var(--card);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            border: 2px solid #333;
+        }
+
+        .date-picker {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .date-picker label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .date-picker input {
+            background-color: var(--input-bg);
+            border: 2px solid var(--input-border);
+            color: var(--text);
+            padding: 12px;
+            border-radius: 25px;
+            font-size: 1rem;
+            width: 200px;
+        }
+
+        .date-picker input:focus {
+            outline: none;
+            border-color: var(--focus-color);
+        }
+
+        .info-links {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .info-links a {
+            color: var(--primary);
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .info-links a:hover {
+            color: var(--hover-primary);
+        }
+
+        .proxy-status {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 15px;
+            background-color: var(--highlight-bg);
+            border: 1px solid #444;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .spinner {
+            border: 4px solid #333;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .output-section {
+            background-color: var(--card);
+            padding: 30px;
+            border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border: 2px solid #333;
+        }
+
+        .output-box {
+            background-color: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 25px;
+            padding: 20px;
+            width: 100%;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.6;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+
+        .output-box:focus {
+            outline: none;
+            border-color: var(--focus-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .fetch-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        .fetch-btn:hover {
+            background-color: var(--hover-primary);
+        }
+
+        .fetch-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        .copy-btn {
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--success-hover);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 25px;
+            font-style: italic;
+            background-color: var(--highlight-bg);
+            border: 2px solid #333;
+        }
+
+        .status.error {
+            color: var(--secondary);
+            border-color: var(--secondary);
+            background-color: rgba(255, 68, 68, 0.1);
+        }
+
+        .status.success {
+            color: var(--success);
+            border-color: var(--success);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
             }
-            40% {
-                color: black;
-                text-shadow:
-                    .25em 0 0 rgba(0,0,0,0),
-                    .5em 0 0 rgba(0,0,0,0);
+            
+            h1 {
+                font-size: 2rem;
             }
-            60% {
-                text-shadow:
-                    .25em 0 0 black,
-                    .5em 0 0 rgba(0,0,0,0);
+            
+            .back-btn {
+                position: static;
+                transform: none;
+                margin-bottom: 20px;
+                display: block;
+                width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
             }
-            80%, 100% {
-                text-shadow:
-                    .25em 0 0 black,
-                    .5em 0 0 black;
+            
+            .controls, .output-section {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .fetch-btn, .copy-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .date-picker input {
+                width: 100%;
+                max-width: 250px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <a href="index.html" class="home-button">Home</a>
-        <h1>MLB PSP Schedule</h1>
-        <p>designed by @tomfc on real</p>
-        <p>please dm for bug fixes/suggestions</p>
-    </div>
-    
     <div class="container">
-        <div class="input-section">
-            <h2>MLB Matchups</h2>
+        <header>
+            <a href="mlb.html" class="back-btn">← Back</a>
+            <h1>MLB PSP Schedule</h1>
+            <p class="description">designed by @tomfc on real</p>
+            <p class="description">please dm for bug fixes/suggestions</p>
+        </header>
+        
+        <div class="controls">
             <div class="date-picker">
-                <label for="gameDate">Select date: </label>
+                <label for="gameDate">Select Game Date</label>
                 <input type="date" id="gameDate">
             </div>
-          <a href="corsfaqs.html">What is a CORS Proxy?</a> 
-          <a href="https://cors-anywhere.herokuapp.com/">Enable Proxy</a>
-            <div class="loading" id="loading">Fetching MLB schedule data</div>
-            <textarea class="output-box" id="output" readonly placeholder="MLB matchups will appear here in the format: TEAM1 (Pitcher1) vs. TEAM2 (Pitcher2)"></textarea>
-            <div class="button-group">
-                <button class="button" id="fetchButton">Fetch MLB Schedule</button>
-                <button class="button copy-button" id="copyButton">Copy to Clipboard</button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                Fetching MLB schedule data...
             </div>
-            <p class="status" id="status">Click "Fetch MLB Schedule" to get today's matchups.</p>
+            
+            <div class="button-group">
+                <button class="fetch-btn" id="fetchButton">Fetch MLB Schedule</button>
+            </div>
+        </div>
+        
+        <div class="output-section">
+            <textarea class="output-box" id="output" readonly placeholder="MLB matchups will appear here in the format: TEAM1 (Pitcher1) vs. TEAM2 (Pitcher2)"></textarea>
+            
+            <div class="button-group">
+                <button class="copy-btn" id="copyButton">Copy to Clipboard</button>
+            </div>
+            
+            <div class="status" id="status">Click "Fetch MLB Schedule" to get today's matchups.</div>
         </div>
     </div>
 
@@ -181,6 +348,14 @@
             const today = new Date();
             const formattedDate = today.toISOString().split('T')[0];
             dateInput.value = formattedDate;
+
+            // Multiple CORS proxy options for fallback
+            const corsProxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://cors-proxy.htmldriven.com/?url=',
+                'https://api.codetabs.com/v1/proxy?quest='
+            ];
 
             // MLB team abbreviation mapping
             const teamAbbreviations = {
@@ -223,26 +398,33 @@
                         return abbr;
                     }
                 }
-                // If no match found, return first 3 characters
                 return teamName.substring(0, 3).toUpperCase();
             }
 
-            // Function to fetch and process MLB schedule
-            async function fetchMLBSchedule() {
-                try {
-                    loadingIndicator.style.display = 'block';
-                    statusText.textContent = 'Fetching MLB schedule data...';
-                    outputArea.value = '';
+            // Function to update status with styling
+            function updateStatus(message, type = 'normal') {
+                statusText.textContent = message;
+                statusText.className = 'status';
+                if (type === 'error') {
+                    statusText.classList.add('error');
+                } else if (type === 'success') {
+                    statusText.classList.add('success');
+                }
+            }
 
-                    const selectedDate = dateInput.value;
-                    const formattedDateForAPI = selectedDate.replace(/-/g, '');
-                    
-                    // We'll use MLB Stats API
-                    const apiUrl = `https://cors-anywhere.herokuapp.com/https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${selectedDate}&hydrate=game(content(summary)),probablePitcher,linescore`;
-                    
-                    const response = await fetch(apiUrl, {
+            // Function to try multiple CORS proxies
+            async function fetchWithProxy(baseUrl, proxyIndex = 0) {
+                if (proxyIndex >= corsProxies.length) {
+                    throw new Error('All CORS proxies failed');
+                }
+
+                const proxyUrl = corsProxies[proxyIndex] + encodeURIComponent(baseUrl);
+                
+                try {
+                    const response = await fetch(proxyUrl, {
+                        method: 'GET',
                         headers: {
-                            'Origin': window.location.origin
+                            'Accept': 'application/json',
                         }
                     });
                     
@@ -250,12 +432,35 @@
                         throw new Error(`HTTP error! Status: ${response.status}`);
                     }
                     
-                    const data = await response.json();
+                    return await response.json();
+                } catch (error) {
+                    console.warn(`Proxy ${proxyIndex + 1} failed:`, error.message);
+                    
+                    // Try next proxy
+                    if (proxyIndex < corsProxies.length - 1) {
+                        return await fetchWithProxy(baseUrl, proxyIndex + 1);
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
+            // Function to fetch and process MLB schedule
+            async function fetchMLBSchedule() {
+                try {
+                    fetchButton.disabled = true;
+                    loadingIndicator.style.display = 'block';
+                    updateStatus('Fetching MLB schedule data...');
+                    outputArea.value = '';
+
+                    const selectedDate = dateInput.value;
+                    const baseApiUrl = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${selectedDate}&hydrate=game(content(summary)),probablePitcher,linescore`;
+                    
+                    const data = await fetchWithProxy(baseApiUrl);
                     
                     if (!data.dates || data.dates.length === 0) {
                         outputArea.value = "No games scheduled for the selected date.";
-                        statusText.textContent = "No games found for the selected date.";
-                        loadingIndicator.style.display = 'none';
+                        updateStatus("No games found for the selected date.", 'error');
                         return;
                     }
 
@@ -263,8 +468,7 @@
                     
                     if (!games || games.length === 0) {
                         outputArea.value = "No games scheduled for the selected date.";
-                        statusText.textContent = "No games found for the selected date.";
-                        loadingIndicator.style.display = 'none';
+                        updateStatus("No games found for the selected date.", 'error');
                         return;
                     }
 
@@ -288,21 +492,29 @@
                     }).join('\n');
                     
                     outputArea.value = formattedOutput;
-                    statusText.textContent = `MLB schedule fetched successfully - ${new Date().toLocaleString()}`;
+                    updateStatus(`MLB schedule fetched successfully - ${new Date().toLocaleString()}`, 'success');
                     
                 } catch (error) {
                     console.error('Error fetching MLB schedule:', error);
-                    statusText.innerHTML = `<span class="error">Error fetching MLB schedule: ${error.message}</span>`;
-                    outputArea.value = "Note: If you're seeing a CORS error, you may need to activate the CORS proxy by visiting https://cors-anywhere.herokuapp.com/ and requesting temporary access.";
+                    updateStatus(`Error fetching MLB schedule: ${error.message}`, 'error');
+                    
+                    if (error.message.includes('CORS') || error.message.includes('blocked')) {
+                        outputArea.value = "CORS Error: Unable to fetch data due to browser security restrictions. This is a common issue when accessing external APIs from web browsers.";
+                    } else if (error.message.includes('All CORS proxies failed')) {
+                        outputArea.value = "All proxy services are currently unavailable. Please try again later or check your internet connection.";
+                    } else {
+                        outputArea.value = `Error: ${error.message}`;
+                    }
                 } finally {
                     loadingIndicator.style.display = 'none';
+                    fetchButton.disabled = false;
                 }
             }
 
             // Copy to clipboard function
             function copyToClipboard() {
                 if (!outputArea.value) {
-                    statusText.textContent = 'Nothing to copy. Please fetch the MLB schedule first.';
+                    updateStatus('Nothing to copy. Please fetch the MLB schedule first.', 'error');
                     return;
                 }
                 
@@ -312,11 +524,11 @@
                 // Deselect the text
                 window.getSelection().removeAllRanges();
                 
-                statusText.textContent = 'Matchups copied to clipboard!';
+                updateStatus('Matchups copied to clipboard!', 'success');
                 
                 // Reset status message after 3 seconds
                 setTimeout(() => {
-                    statusText.textContent = 'Click "Fetch MLB Schedule" to refresh the data.';
+                    updateStatus('Click "Fetch MLB Schedule" to refresh the data.');
                 }, 3000);
             }
 
