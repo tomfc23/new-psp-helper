@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSP Helper</title>
+    <style>
+        :root {
+            --primary: #6f42c1;
+            --secondary: #ff4444;
+            --accent: #4CAF50;
+            --background: #000000;
+            --card: #1a1a1a;
+            --text: #d3d3d3;
+            --text-muted: #999999;
+            --input-bg: #333333;
+            --input-border: #555555;
+            --focus-color: #007BFF;
+            --hover-primary: #5a32a3;
+            --highlight-bg: #2a2a2a;
+            --nhl-color: #0033A0;
+            --nba-color: #C9082A;
+            --mlb-color: #0F6CC1;
+            --wnba-color: #FF6600;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 0;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 36px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(111, 66, 193, 0.3);
+        }
+
+        .description {
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .description a {
+            color: #858bf0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .description a:hover {
+            color: var(--primary);
+        }
+
+        .sports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .sport-card {
+            background-color: var(--card);
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            border: 2px solid #333;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .sport-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sport-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
+        }
+
+        .sport-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            padding: 25px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--highlight-bg), var(--card));
+            border-bottom: 1px solid #333;
+        }
+
+        .nhl .card-header {
+            background: linear-gradient(135deg, var(--nhl-color), #001f5c);
+        }
+
+        .nba .card-header {
+            background: linear-gradient(135deg, var(--nba-color), #8b0619);
+        }
+
+        .mlb .card-header {
+            background: linear-gradient(135deg, var(--mlb-color), #0a4d8a);
+        }
+
+        .wnba .card-header {
+            background: linear-gradient(135deg, var(--wnba-color), #cc5200);
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .card-content {
+            padding: 25px 20px;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sport-description {
+            color: var(--text-muted);
+            line-height: 1.6;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .card-action {
+            padding: 0 20px 25px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--hover-primary));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .nhl .btn {
+            background: linear-gradient(135deg, var(--nhl-color), #002A80);
+        }
+
+        .nhl .btn:hover {
+            background: linear-gradient(135deg, #002A80, var(--nhl-color));
+            transform: translateY(-2px);
+        }
+
+        .nba .btn {
+            background: linear-gradient(135deg, var(--nba-color), #A10622);
+        }
+
+        .nba .btn:hover {
+            background: linear-gradient(135deg, #A10622, var(--nba-color));
+            transform: translateY(-2px);
+        }
+
+        .mlb .btn {
+            background: linear-gradient(135deg, var(--mlb-color), #0D55A1);
+        }
+
+        .mlb .btn:hover {
+            background: linear-gradient(135deg, #0D55A1, var(--mlb-color));
+            transform: translateY(-2px);
+        }
+
+        .wnba .btn {
+            background: linear-gradient(135deg, var(--wnba-color), #cc5200);
+        }
+
+        .wnba .btn:hover {
+            background: linear-gradient(135deg, #cc5200, var(--wnba-color));
+            transform: translateY(-2px);
+        }
+
+        .sport-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .sport-card:hover .sport-icon {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--card), var(--highlight-bg));
+            color: var(--text);
+            border-radius: 25px;
+            border: 2px solid #333;
+            box-shadow: var(--shadow);
+        }
+
+        .footer-content {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Animation for cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sport-card {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .sport-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .sport-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .sport-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .sports-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                padding: 15px 0;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+            
+            .description {
+                font-size: 16px;
+            }
+
+            .sport-card {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Loading animation */
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>PSP Helper</h1>
+            <p class="description">Designed by @tomfc on real || dm for suggestions/fixes</p>
+        </header>
+
+        <div class="sports-grid">
+            <!-- NHL Card -->
+            <div class="sport-card nhl">
+                <div class="card-header">
+                    <div class="sport-icon">🏒</div>
+                    <h2 class="card-title">NHL Stats</h2>
+                </div>
+                <div class="card-content">
+                </div>
+                <div class="card-action">
+                    <a href="nhl.html" class="btn">View NHL Stats</a>
+                </div>
+            </div>
+
+            <!-- NBA Card -->
+            <div class="sport-card nba">
+                <div class="card-header">
+                    <div class="sport-icon">🏀</div>
+                    <h2 class="card-title">NBA Stats</h2>
+                </div>
+                <div class="card-content">
+                </div>
+                <div class="card-action">
+                    <a href="nba.html" class="btn">View NBA Stats</a>
+                </div>
+            </div>
+
+            <!-- MLB Card -->
+            <div class="sport-card mlb">
+                <div class="card-header">
+                    <div class="sport-icon">⚾</div>
+                    <h2 class="card-title">MLB Stats</h2>
+                </div>
+                <div class="card-content">
+                </div>
+                <div class="card-action">
+                    <a href="mlb.html" class="btn">View MLB Stats</a>
+                </div>
+            </div>
+
+            <!-- WNBA Card -->
+            <div class="sport-card wnba">
+                <div class="card-header">
+                    <div class="sport-icon">🏀</div>
+                    <h2 class="card-title">WNBA Stats</h2>
+                </div>
+                <div class="card-content">
+                </div>
+                <div class="card-action">
+                    <a href="wnba.html" class="btn">View WNBA Stats</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
