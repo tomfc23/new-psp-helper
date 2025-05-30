@@ -5,11 +5,129 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MLB PSP Matchups</title>
   <style>
+    :root {
+      --primary: #6f42c1;
+      --secondary: #ff4444;
+      --background: #000000;
+      --card: #1a1a1a;
+      --text: #d3d3d3;
+      --input-bg: #333333;
+      --input-border: #555555;
+      --focus-color: #007BFF;
+      --hover-primary: #5a32a3;
+      --highlight-bg: #2a2a2a;
+      --success: #4CAF50;
+      --error: #dc3545;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 30px;
+      background-color: var(--card);
+      border-radius: 25px;
+      border: 2px solid #333;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1 {
+      color: var(--primary);
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+    }
+    
+    header p {
+      color: #999;
+      margin: 5px 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .card {
+      background-color: var(--card);
+      border-radius: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      margin-bottom: 30px;
+      padding: 25px;
+      border: 2px solid #333;
+    }
+    
+    .input-section h2 {
+      color: var(--primary);
+      margin-bottom: 20px;
+      font-size: 1.8rem;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      justify-content: center;
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 16px;
+      border-radius: 25px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      color: white;
+    }
+
+    #schedulebutton {
+      background-color: #17a2b8;
+    }
+
+    #schedulebutton:hover {
+      background-color: #138496;
+    }
+
+    .refresh-btn {
+      background-color: var(--primary);
+    }
+
+    .refresh-btn:hover {
+      background-color: var(--hover-primary);
+    }
+
+    .btn {
+      background-color: var(--secondary);
+    }
+
+    .btn:hover {
+      background-color: #cc0000;
+    }
+
     .loading-indicator {
       display: flex;
       flex-direction: column;
       align-items: center;
       margin: 20px 0;
+      padding: 20px;
+      background-color: var(--highlight-bg);
+      border-radius: 15px;
+      border: 1px solid #444;
     }
 
     .loading-indicator.hidden {
@@ -19,9 +137,9 @@
     .spinner {
       width: 40px;
       height: 40px;
-      border: 4px solid rgba(0, 0, 0, 0.1);
+      border: 4px solid rgba(111, 66, 193, 0.3);
       border-radius: 50%;
-      border-top-color: #3498db;
+      border-top-color: var(--primary);
       animation: spin 1s ease-in-out infinite;
     }
 
@@ -30,145 +148,105 @@
     }
 
     .data-status {
-      margin-top: 10px;
-      font-style: italic;
-      color: #777;
+      background-color: #1a2332;
+      padding: 15px;
+      border-radius: 15px;
+      margin: 15px 0;
+      font-size: 14px;
+      color: #6bb6ff;
+      border: 1px solid #2a3a4a;
+      text-align: center;
     }
 
     .data-status.updated {
-      color: #2ecc71;
-      font-weight: bold;
+      color: var(--success);
+      background-color: rgba(76, 175, 80, 0.1);
+      border-color: var(--success);
     }
 
-    .refresh-btn {
-      margin-top: 10px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .refresh-btn:hover {
-      background-color: #2980b9;
-    }
-
-    .last-updated {
-      font-style: italic;
-      color: #777;
-      margin-top: 20px;
+    .error-message {
+      color: var(--error);
+      background-color: rgba(220, 53, 69, 0.1);
+      padding: 15px;
+      border-radius: 15px;
+      margin: 15px 0;
+      border: 1px solid var(--error);
       text-align: center;
     }
 
-    :root {
-      --primary: #0a3161;
-      --secondary: #e81828;
-      --light: #f5f5f5;
-      --dark: #333;
-      --success: #4caf50;
-      --card-bg: #fff;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      background-color: var(--light);
-      color: var(--dark);
-    }
-    
-    header {
-      background-color: var(--primary);
-      color: white;
-      padding: 1.5rem;
+    .success-message {
+      color: var(--success);
+      background-color: rgba(76, 175, 80, 0.1);
+      padding: 15px;
+      border-radius: 15px;
+      margin: 15px 0;
+      border: 1px solid var(--success);
       text-align: center;
     }
-    
-    h1 {
-      margin-bottom: 0.5rem;
+
+    .hidden {
+      display: none;
     }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-    
-    .card {
-      background-color: var(--card-bg);
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      margin-bottom: 1.5rem;
-      padding: 1.5rem;
-    }
-    
-    .input-section {
-      margin-bottom: 2rem;
-    }
-    
+
     textarea {
       width: 100%;
       min-height: 200px;
-      padding: 1rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      padding: 20px;
+      border: 2px solid var(--input-border);
+      border-radius: 15px;
+      background-color: var(--input-bg);
+      color: var(--text);
       font-family: inherit;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
+      font-size: 16px;
+      margin-bottom: 20px;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    textarea:focus {
+      border-color: var(--focus-color);
+      outline: none;
+    }
+
+    textarea::placeholder {
+      color: #888;
+    }
+
+    .input-section p {
+      color: #999;
+      margin-bottom: 15px;
+      font-style: italic;
     }
     
-    .btn {
-      background-color: var(--secondary);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.2s;
-      margin-right: 10px;
+    #results h2 {
+      color: var(--primary);
+      margin-bottom: 25px;
+      font-size: 2rem;
+      text-align: center;
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 15px;
     }
-    
-    .btn:hover {
-      background-color: #c41420;
-    }
-    
+
     .results-section {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-    
-    @media (max-width: 768px) {
-      .results-section {
-        grid-template-columns: 1fr;
-      }
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 25px;
     }
     
     .result-card {
-      background-color: var(--card-bg);
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 1.5rem;
+      background-color: var(--card);
+      border-radius: 25px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      padding: 25px;
+      border: 2px solid #333;
     }
     
     .result-card h3 {
       color: var(--primary);
-      margin-bottom: 1rem;
+      margin-bottom: 20px;
       border-bottom: 2px solid var(--secondary);
-      padding-bottom: 0.5rem;
-    }
-    
-    .top-pick {
-      color: var(--secondary);
-      font-weight: bold;
+      padding-bottom: 10px;
+      font-size: 1.4rem;
     }
     
     .recommendation-list {
@@ -176,68 +254,77 @@
     }
     
     .recommendation-list li {
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #eee;
+      padding: 15px 0;
+      border-bottom: 1px solid #444;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     
     .recommendation-list li:last-child {
       border-bottom: none;
     }
+
+    .recommendation-list li:hover {
+      background-color: var(--highlight-bg);
+      border-radius: 8px;
+      margin: 0 -10px;
+      padding-left: 25px;
+      padding-right: 25px;
+    }
+    
+    .top-pick {
+      color: var(--success) !important;
+      font-weight: bold;
+      background-color: rgba(76, 175, 80, 0.1);
+      border-radius: 8px;
+      margin: 0 -10px;
+      padding-left: 25px !important;
+      padding-right: 25px !important;
+    }
     
     .stat-value {
-      float: right;
       font-weight: bold;
-    }
-    
-    .hidden {
-      display: none;
-    }
-    
-    #schedulebutton {
-      background-color: #0a3161;
-      color: #ffffff;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
-      display: inline-block;
+      color: var(--primary);
     }
 
-    .button-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
+    /* Responsive design */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
 
-    .error-message {
-      color: #e74c3c;
-      background-color: #fadbd8;
-      padding: 10px;
-      border-radius: 4px;
-      margin: 10px 0;
-    }
+      .results-section {
+        grid-template-columns: 1fr;
+      }
 
-    .success-message {
-      color: #27ae60;
-      background-color: #d5f5d5;
-      padding: 10px;
-      border-radius: 4px;
-      margin: 10px 0;
+      .button-group {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        max-width: 300px;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .card {
+        padding: 20px;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>MLB PSP Matchups</h1>
-    <p>designed by @tomfc on real</p> <br>
-    <p>please dm for bug fixes/suggestions</p>
-  </header>
-  
   <div class="container">
+    <header>
+      <h1>MLB PSP Matchups</h1>
+      <p>designed by @tomfc on real</p>
+      <p>please dm for bug fixes/suggestions</p>
+    </header>
+    
     <div class="card input-section">
       <h2>Enter Today's Matchups</h2>
       
@@ -252,7 +339,7 @@
       
       <div class="loading-indicator hidden" id="loadingIndicator">
         <div class="spinner"></div>
-        <div class="data-status">Loading latest MLB statistics...</div>
+        <div style="margin-top: 15px; color: var(--primary); font-weight: bold;">Loading latest MLB statistics...</div>
       </div>
       
       <div id="dataStatus" class="data-status"></div>
@@ -263,7 +350,9 @@
       <textarea id="matchupsInput" placeholder="ARI (Corbin Burnes) vs. CHC (Cody Rea)
 KC (Cole Ragans) vs. DET (Jackson Jobe)
 ..."></textarea>
-      <button id="analyzeBtn" class="btn">Analyze Matchups</button>
+      <div class="button-group">
+        <button id="analyzeBtn" class="btn">Analyze Matchups</button>
+      </div>
     </div>
     
     <div id="results" class="hidden">
