@@ -537,7 +537,7 @@ KC (Cole Ragans) vs. DET (Jackson Jobe)
           // Hits Allowed (Column 8, 9, 10)
           const hPitcher = cells[8];
           const hTeam = cells[9];
-          const hValue = parseInt(cells[10]);
+          const hValue = parseFloat(cells[10]);
           if (hPitcher && hTeam && !isNaN(hValue)) {
             mlbData.pitcherStats.hitsAllowed.push({ 
               name: hPitcher, 
