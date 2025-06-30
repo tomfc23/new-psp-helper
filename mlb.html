@@ -525,7 +525,7 @@ KC (Cole Ragans) vs. DET (Jackson Jobe)
           // Strikeouts (Column 5, 6, 7)
           const kPitcher = cells[5];
           const kTeam = cells[6];
-          const kValue = parseInt(cells[7]);
+          const kValue = parseFloat(cells[7]);
           if (kPitcher && kTeam && !isNaN(kValue)) {
             mlbData.pitcherStats.strikeouts.push({ 
               name: kPitcher, 
