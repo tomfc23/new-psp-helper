@@ -1,729 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WNBA Schedule Scraper</title>
-    <style>
-        :root {
-            --primary: #6f42c1;
-            --secondary: #ff4444;
-            --background: #000000;
-            --card: #1a1a1a;
-            --text: #d3d3d3;
-            --input-bg: #333333;
-            --input-border: #555555;
-            --focus-color: #007BFF;
-            --hover-primary: #5a32a3;
-            --highlight-bg: #2a2a2a;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: sans-serif;
-        }
-
-        body {
-            background-color: var(--background);
-            color: var(--text);
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .description {
-            margin-bottom: 20px;
-            color: #999;
-            font-size: 1.1rem;
-        }
-
-        .controls {
-            background-color: var(--card);
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-            border: 2px solid #333;
-            text-align: center;
-        }
-
-        .fetch-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .fetch-btn:hover {
-            background-color: var(--hover-primary);
-        }
-
-        .fetch-btn:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-
-        .back-btn {
-            background-color: var(--secondary);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.1rem;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-left: 15px;
-        }
-
-        .back-btn:hover {
-            background-color: #cc3333;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 40px;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .spinner {
-            border: 4px solid #333;
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .info {
-            background-color: var(--card);
-            color: var(--text);
-            padding: 15px;
-            border-radius: 25px;
-            text-align: center;
-            margin: 20px 0;
-            font-size: 0.9rem;
-            border: 2px solid #333;
-        }
-
-        .info strong {
-            color: var(--primary);
-        }
-
-        .results {
-            padding: 20px 0;
-            min-height: 200px;
-        }
-
-        .schedule-item {
-            background-color: var(--card);
-            margin: 15px 0;
-            padding: 20px;
-            border-radius: 25px;
-            font-size: 1.2rem;
-            font-weight: 500;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            border: 2px solid #333;
-        }
-
-        .schedule-item:hover {
-            transform: translateY(-2px);
-            border-color: var(--primary);
-        }
-
-        .vs {
-            color: var(--primary);
-            font-weight: bold;
-            margin: 0 10px;
-        }
-
-        .error {
-            background-color: var(--card);
-            color: var(--secondary);
-            padding: 20px;
-            border-radius: 25px;
-            text-align: center;
-            margin: 20px 0;
-            border: 2px solid var(--secondary);
-        }
-
-        .empty {
-            text-align: center;
-            color: #666;
-            font-style: italic;
-            padding: 40px;
-        }
-
-        .copy-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            border-radius: 25px;
-            cursor: pointer;
-            margin-top: 15px;
-            transition: background-color 0.3s;
-        }
-
-        .copy-btn:hover {
-            background-color: #45a049;
-        }
-
-        .formatted-output {
-            background-color: var(--input-bg);
-            border: 2px solid var(--input-border);
-            border-radius: 25px;
-            padding: 20px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            white-space: pre-line;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: var(--text);
-        }
-
-        .date-header {
-            text-align: center;
-            margin-bottom: 15px;
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .no-games-info {
-            background-color: var(--card);
-            color: var(--text);
-            padding: 20px;
-            border-radius: 25px;
-            margin: 20px 0;
-            border: 2px solid #ffa726;
-        }
-
-        .no-games-info strong {
-            color: #ffa726;
-        }
-
-        .example-output {
-            opacity: 0.6;
-            text-align: center;
-            margin-top: 20px;
-            font-style: italic;
-            color: #888;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .container {
-                padding: 0 10px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .controls {
-                padding: 20px;
-            }
-            
-            .back-btn {
-                margin-left: 0;
-                margin-top: 10px;
-                display: block;
-                width: 100%;
-            }
-            
-            .schedule-item {
-                font-size: 1rem;
-                padding: 15px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>WNBA Schedule Scraper</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #13131c;
+      color: #ededed;
+      font-family: system-ui, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 660px;
+      margin: 40px auto;
+      padding: 22px 12px 40px 12px;
+      background: #22223a;
+      border-radius: 18px;
+      box-shadow: 0 2px 24px #000a;
+    }
+    h1 { color: #b37bfa; text-align: center; margin-bottom: 8px;}
+    .description { color: #aaa; margin-bottom: 20px; text-align: center; }
+    .btn-row { text-align: center; margin-bottom: 24px;}
+    button {
+      background: #b37bfa; color: #fff; border: none;
+      padding: 13px 23px; border-radius: 22px;
+      font-weight: bold; font-size: 1.1rem;
+      cursor: pointer; transition: background 0.2s;
+      margin: 3px 4px;
+    }
+    button:hover { background: #8d57e7; }
+    .copy-btn { background: #4caf50;}
+    .copy-btn:hover { background: #388e3c;}
+    .back-btn { background: #ff4444;}
+    .back-btn:hover { background: #cc3333;}
+    .loading, .error, .info, .empty {
+      text-align: center; margin: 25px 0; font-size: 1rem;
+    }
+    .loading { color: #b37bfa; }
+    .error { color: #ff7474; font-weight: bold;}
+    .info { color: #6bb6ff;}
+    .games-list {
+      background: #181829;
+      border: 2px solid #303050;
+      border-radius: 16px;
+      padding: 15px 20px;
+      margin: 18px 0 8px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 1.1rem;
+      white-space: pre-line;
+    }
+    .date-header {
+      color: #b37bfa; font-weight: bold; text-align: center; margin-top: 20px; margin-bottom: 8px;
+    }
+    @media (max-width:600px){
+      .container { padding: 8px 2px;}
+      button { width: 100%; margin: 8px 0;}
+      .games-list { font-size: 1.0rem; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🏀 WNBA Schedule</h1>
-            <p class="description">Live schedule scraper from ESPN</p>
-        </header>
-        
-        <div class="controls">
-            <button id="fetchBtn" class="fetch-btn">Fetch Latest Schedule</button>
-            <button id="backBtn" class="back-btn" onclick="window.location.href='wnba.html'">← Back</button>
-        </div>
-
-        <div class="info">
-            <strong>Note:</strong> This scraper fetches data from ESPN's WNBA schedule page. Games are displayed in "Team A v. Team B" format.
-        </div>
-
-        <div id="loading" class="loading">
-            <div class="spinner"></div>
-            <p>Fetching WNBA schedule data from ESPN...</p>
-        </div>
-
-        <div id="results" class="results">
-            <div class="empty">Click "Fetch Latest Schedule" to load today's WNBA games</div>
-        </div>
+  <div class="container">
+    <h1>🏀 WNBA Schedule</h1>
+    <div class="description">
+      Scrapes today's WNBA games live from ESPN.<br>
+      Copy the list below for use in your prop helper.
     </div>
+    <div class="btn-row">
+      <button id="fetchBtn">Fetch Today's Schedule</button>
+      <button class="back-btn" onclick="window.location.href='wnba-player.html'">← Back to Player Tool</button>
+    </div>
+    <div id="info" class="info">Data loaded from ESPN WNBA schedule using a CORS proxy.</div>
+    <div id="loading" class="loading" style="display:none;">Loading ESPN schedule...</div>
+    <div id="error" class="error" style="display:none;"></div>
+    <div id="scheduleBlock"></div>
+  </div>
+  <script>
+    // Use a public proxy (swap to your own if needed)
+    const PROXY = 'https://api.allorigins.win/raw?url=';
+    const ESPN_URL = 'https://www.espn.com/wnba/schedule';
 
-    <script>
-        const fetchBtn = document.getElementById('fetchBtn');
-        const loading = document.getElementById('loading');
-        const results = document.getElementById('results');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const loading = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+    const infoDiv = document.getElementById('info');
+    const scheduleBlock = document.getElementById('scheduleBlock');
 
-        // CORS proxy services
-        const corsProxies = [
-            'https://api.allorigins.win/raw?url=',
-            'https://cors-anywhere.herokuapp.com/',
-            'https://thingproxy.freeboard.io/fetch/'
-        ];
+    fetchBtn.onclick = fetchSchedule;
 
-        let currentProxyIndex = 0;
+    function showError(msg) {
+      errorDiv.style.display = '';
+      errorDiv.textContent = msg;
+      loading.style.display = 'none';
+      scheduleBlock.innerHTML = '';
+    }
+    function clearError() {
+      errorDiv.textContent = '';
+      errorDiv.style.display = 'none';
+    }
+    function showLoading(on) {
+      loading.style.display = on ? '' : 'none';
+    }
 
-        // WNBA team mappings for standardization
-        const teamMappings = {
-            'LAS': 'Las Vegas',
-            'SEA': 'Seattle',
-            'MIN': 'Minnesota',
-            'PHX': 'Phoenix',
-            'CHI': 'Chicago',
-            'IND': 'Indiana',
-            'CONN': 'Connecticut',
-            'NY': 'New York',
-            'ATL': 'Atlanta',
-            'WAS': 'Washington',
-            'DAL': 'Dallas',
-            'LA': 'Los Angeles',
-            'GS': 'Golden State',
-            'Las Vegas': 'Las Vegas',
-            'Seattle': 'Seattle',
-            'Minnesota': 'Minnesota',
-            'Phoenix': 'Phoenix',
-            'Chicago': 'Chicago',
-            'Indiana': 'Indiana',
-            'Connecticut': 'Connecticut',
-            'New York': 'New York',
-            'Atlanta': 'Atlanta',
-            'Washington': 'Washington',
-            'Dallas': 'Dallas',
-            'Los Angeles': 'Los Angeles',
-            'Golden State': 'Golden State'
-        };
+    function todayStr() {
+      const d = new Date();
+      // ESPN often uses e.g. "Tuesday, July 2"
+      return d.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+    }
 
-        fetchBtn.addEventListener('click', fetchSchedule);
-
-        async function fetchSchedule() {
-            fetchBtn.disabled = true;
-            loading.style.display = 'block';
-            results.innerHTML = '';
-
-            try {
-                const data = await fetchWithProxy();
-                parseAndDisplaySchedule(data);
-            } catch (error) {
-                console.error('Error fetching schedule:', error);
-                results.innerHTML = `
-                    <div class="error">
-                        <strong>Failed to fetch schedule</strong><br>
-                        ${error.message}<br><br>
-                        <small>This may be due to CORS restrictions or ESPN being unavailable. 
-                        The scraper tries multiple proxy services to bypass CORS limitations.</small>
-                    </div>
-                `;
-            } finally {
-                fetchBtn.disabled = false;
-                loading.style.display = 'none';
-            }
+    async function fetchSchedule() {
+      clearError();
+      showLoading(true);
+      scheduleBlock.innerHTML = '';
+      infoDiv.textContent = "Loading from ESPN via proxy...";
+      try {
+        const resp = await fetch(PROXY + encodeURIComponent(ESPN_URL));
+        if (!resp.ok) throw new Error('Could not fetch ESPN schedule.');
+        const html = await resp.text();
+        const games = parseESPN(html);
+        showLoading(false);
+        if (games.length) {
+          renderGames(games);
+        } else {
+          showNoGames();
         }
+      } catch (e) {
+        showLoading(false);
+        showError('Failed to fetch schedule (CORS or ESPN error). Paste games manually if needed.');
+        infoDiv.textContent = "If proxy fails, paste games manually.";
+        showNoGames();
+      }
+    }
 
-        async function fetchWithProxy() {
-            const targetUrl = 'https://www.espn.com/wnba/schedule';
-            
-            for (let i = 0; i < corsProxies.length; i++) {
-                try {
-                    const proxyUrl = corsProxies[currentProxyIndex] + encodeURIComponent(targetUrl);
-                    console.log(`Trying proxy ${currentProxyIndex + 1}: ${corsProxies[currentProxyIndex]}`);
-                    
-                    const response = await fetch(proxyUrl, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                        }
-                    });
+    function parseESPN(html) {
+      // Try to find today's games in ESPN schedule
+      const games = [];
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      // ESPN often uses tables with class "Table"
+      // Find today's section by heading text
+      const today = todayStr();
+      let found = false;
+      let table = null;
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-
-                    const data = await response.text();
-                    if (data && data.length > 100) {
-                        return data;
-                    } else {
-                        throw new Error('Invalid response data');
-                    }
-                } catch (error) {
-                    console.error(`Proxy ${currentProxyIndex + 1} failed:`, error);
-                    currentProxyIndex = (currentProxyIndex + 1) % corsProxies.length;
-                    
-                    if (i === corsProxies.length - 1) {
-                        throw new Error('All CORS proxies failed. Unable to fetch data from ESPN.');
-                    }
-                }
+      // Try to find table under today's date
+      Array.from(doc.querySelectorAll('h2, h3, .Table__Title, .table-caption')).forEach(header => {
+        if (header.textContent.trim().includes(today)) {
+          found = true;
+          // Next table is likely today's games
+          let el = header;
+          while (el && el.nextElementSibling) {
+            el = el.nextElementSibling;
+            if (el.tagName === 'TABLE' || el.classList.contains('Table')) {
+              table = el;
+              break;
             }
+          }
         }
+      });
 
-        function parseAndDisplaySchedule(html) {
-            try {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                let games = [];
-                let foundGames = false;
-
-                // Get today's date in various formats for matching
-                const today = new Date();
-                const todayFormatted = {
-                    full: today.toLocaleDateString('en-US', { 
-                        weekday: 'long', 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                    }),
-                    short: today.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        year: 'numeric'
-                    }),
-                    monthDay: today.toLocaleDateString('en-US', { 
-                        month: 'long', 
-                        day: 'numeric'
-                    }),
-                    shortMonthDay: today.toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric'
-                    }),
-                    dayOfWeek: today.toLocaleDateString('en-US', { weekday: 'long' })
-                };
-
-                console.log('Looking for today\'s date:', todayFormatted);
-
-                // Try to find today's section first
-                games = findTodaysGames(doc, todayFormatted);
-                foundGames = games.length > 0;
-
-                // If no games found with date parsing, fall back to original method
-                if (!foundGames) {
-                    console.log('Date-based parsing failed, trying general parsing...');
-                    
-                    const espnSelectors = [
-                        '.Table__TR',
-                        '.schedule-game',
-                        '[data-module="Schedule"]',
-                        '.ScheduleTables',
-                        '.Table tbody tr',
-                        '.ResponsiveTable tr',
-                        'tr[data-idx]',
-                        '.gameModules'
-                    ];
-
-                    for (const selector of espnSelectors) {
-                        const elements = doc.querySelectorAll(selector);
-                        if (elements.length > 0) {
-                            console.log(`Found ${elements.length} elements with selector: ${selector}`);
-                            
-                            elements.forEach(element => {
-                                const gameInfo = extractESPNGameInfo(element);
-                                if (gameInfo) {
-                                    games.push(gameInfo);
-                                    foundGames = true;
-                                }
-                            });
-                            
-                            if (foundGames) break;
-                        }
-                    }
-                }
-
-                displayResults(games, foundGames);
-
-            } catch (error) {
-                console.error('Error parsing HTML:', error);
-                results.innerHTML = `
-                    <div class="error">
-                        <strong>Error parsing schedule data</strong><br>
-                        The ESPN website structure may have changed or the data format is unexpected.<br>
-                        Error: ${error.message}
-                    </div>
-                `;
+      // If found, parse rows
+      if (table) {
+        Array.from(table.querySelectorAll('tbody tr')).forEach(row => {
+          const tds = row.querySelectorAll('td');
+          if (tds.length >= 2) {
+            // Team names in first 2 cells, sometimes with <a>
+            let teamA = tds[0].textContent.trim();
+            let teamB = tds[1].textContent.trim();
+            if (teamA && teamB && !teamA.match(/Time/i) && !teamB.match(/Time/i)) {
+              games.push(`${teamA} v. ${teamB}`);
             }
-        }
-
-        function findTodaysGames(doc, todayFormatted) {
-            const games = [];
-            
-            // Look for date headers - ESPN uses various formats
-            const dateSelectors = [
-                'h2', 'h3', '.Table__Title', '.ScheduleTable__Header', 
-                '.schedule-date', '.date-header', '[class*="date"]',
-                '[class*="Date"]', '.table-caption', 'caption'
-            ];
-
-            let todaysSection = null;
-            let foundTodaysHeader = false;
-
-            // Find today's date header
-            for (const selector of dateSelectors) {
-                const headers = doc.querySelectorAll(selector);
-                
-                for (const header of headers) {
-                    const headerText = header.textContent.trim();
-                    console.log('Checking header:', headerText);
-                    
-                    if (isDateMatchingToday(headerText, todayFormatted)) {
-                        console.log('Found today\'s header:', headerText);
-                        todaysSection = header;
-                        foundTodaysHeader = true;
-                        break;
-                    }
-                }
-                
-                if (foundTodaysHeader) break;
-            }
-
-            if (todaysSection) {
-                // Find games in the section following today's header
-                let currentElement = todaysSection.nextElementSibling;
-                
-                while (currentElement) {
-                    // Stop if we hit another date header
-                    if (isDateHeader(currentElement)) {
-                        break;
-                    }
-                    
-                    // Look for games in tables or game containers
-                    const gameElements = currentElement.querySelectorAll('tr, .game, .matchup, [class*="game"]');
-                    
-                    for (const gameEl of gameElements) {
-                        const gameInfo = extractESPNGameInfo(gameEl);
-                        if (gameInfo && !games.includes(gameInfo)) {
-                            games.push(gameInfo);
-                        }
-                    }
-                    
-                    // Also check the current element itself
-                    if (currentElement.matches('tr')) {
-                        const gameInfo = extractESPNGameInfo(currentElement);
-                        if (gameInfo && !games.includes(gameInfo)) {
-                            games.push(gameInfo);
-                        }
-                    }
-                    
-                    currentElement = currentElement.nextElementSibling;
-                }
-            }
-
-            // If no section found, try looking for "Today" specifically
-            if (games.length === 0) {
-                const todayElements = doc.querySelectorAll('*');
-                for (const el of todayElements) {
-                    if (el.textContent.includes('Today') || el.textContent.includes('today')) {
-                        let parent = el.closest('table, .schedule-section, .game-section');
-                        if (parent) {
-                            const gameElements = parent.querySelectorAll('tr, .game');
-                            for (const gameEl of gameElements) {
-                                const gameInfo = extractESPNGameInfo(gameEl);
-                                if (gameInfo && !games.includes(gameInfo)) {
-                                    games.push(gameInfo);
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-
-            return games;
-        }
-
-        function isDateMatchingToday(headerText, todayFormatted) {
-            const cleanHeader = headerText.toLowerCase().replace(/[^\w\s]/g, ' ').trim();
-            
-            // Check for "Today" explicitly
-            if (cleanHeader.includes('today')) {
-                return true;
-            }
-            
-            // Check various date formats
-            const dateChecks = [
-                todayFormatted.full.toLowerCase(),
-                todayFormatted.short.toLowerCase(),
-                todayFormatted.monthDay.toLowerCase(),
-                todayFormatted.shortMonthDay.toLowerCase(),
-                todayFormatted.dayOfWeek.toLowerCase()
-            ];
-
-            return dateChecks.some(dateFormat => {
-                const cleanDate = dateFormat.replace(/[^\w\s]/g, ' ').trim();
-                return cleanHeader.includes(cleanDate) || cleanDate.includes(cleanHeader);
-            });
-        }
-
-        function isDateHeader(element) {
-            const tagName = element.tagName.toLowerCase();
-            const className = element.className || '';
-            const text = element.textContent.trim();
-            
-            // Check if it looks like a date header
-            return (
-                ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tagName) ||
-                className.includes('date') ||
-                className.includes('Date') ||
-                className.includes('header') ||
-                className.includes('title') ||
-                /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow)\b/i.test(text) ||
-                /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b/i.test(text)
-            );
-        }
-
-        function extractESPNGameInfo(element) {
-            const text = element.textContent || element.innerText || '';
-            const cleanText = text.replace(/\s+/g, ' ').trim();
-            
-            // Look for team name patterns in ESPN format
-            const teamNames = Object.keys(teamMappings);
-            const foundTeams = [];
-            
-            // Check for team abbreviations or names
-            for (const team of teamNames) {
-                if (cleanText.includes(team)) {
-                    const standardName = teamMappings[team];
-                    if (!foundTeams.includes(standardName)) {
-                        foundTeams.push(standardName);
-                    }
-                }
-            }
-            
-            // If we found exactly 2 teams, create a matchup
-            if (foundTeams.length >= 2) {
-                return `${foundTeams[0]} v. ${foundTeams[1]}`;
-            }
-            
-            // Try to find "vs" or "@" patterns
-            const vsPatterns = [
-                /(\w+(?:\s+\w+)*)\s+(?:vs\.?|@|v\.)\s+(\w+(?:\s+\w+)*)/i,
-                /(\w+)\s+v\.?\s+(\w+)/i
-            ];
-
-            for (const pattern of vsPatterns) {
-                const match = cleanText.match(pattern);
-                if (match) {
-                    const team1 = normalizeTeamName(match[1].trim());
-                    const team2 = normalizeTeamName(match[2].trim());
-                    if (team1 && team2) {
-                        return `${team1} v. ${team2}`;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        function normalizeTeamName(name) {
-            const cleanName = name.replace(/[^\w\s]/g, '').trim();
-            return teamMappings[cleanName] || null;
-        }
-
-        function displayResults(games, foundGames) {
-            if (foundGames && games.length > 0) {
-                const uniqueGames = [...new Set(games)];
-                const formattedText = uniqueGames.join('\n');
-                
-                results.innerHTML = `
-                    <div class="date-header">
-                        📅 Today's WNBA Games (${new Date().toLocaleDateString()})
-                    </div>
-                    <div class="formatted-output">${formattedText}</div>
-                    <div style="text-align: center;">
-                        <button class="copy-btn" onclick="copyToClipboard('${formattedText.replace(/'/g, "\\'")}')">
-                            Copy Today's Schedule
-                        </button>
-                    </div>
-                    <div style="margin-top: 20px;">
-                        ${uniqueGames.map(game => `<div class="schedule-item">${game}</div>`).join('')}
-                    </div>
-                `;
-            } else {
-                results.innerHTML = `
-                    <div class="date-header">
-                        📅 ${new Date().toLocaleDateString()}
-                    </div>
-                    <div class="no-games-info">
-                        <strong>No games scheduled for today</strong><br>
-                        The WNBA schedule shows no games for today's date.<br>
-                        <small>Games are parsed only for today's date section from ESPN.</small>
-                    </div>
-                    <div class="formatted-output" style="opacity: 0.6;">
-Los Angeles v. Seattle
-Indiana v. Golden State</div>
-                    <div class="example-output">
-                        <em>Example output format when games are found</em>
-                    </div>
-                `;
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                // Provide feedback
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                btn.style.backgroundColor = '#28a745';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.backgroundColor = '';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                alert('Failed to copy to clipboard');
-            });
-        }
-
-        // Auto-fetch on page load
-        window.addEventListener('load', () => {
-            setTimeout(fetchSchedule, 1000);
+          }
         });
-    </script>
+      } else {
+        // Backup: parse any pair of team names in .Table or .ResponsiveTable
+        doc.querySelectorAll('.Table, .ResponsiveTable').forEach(table => {
+          Array.from(table.querySelectorAll('tbody tr')).forEach(row => {
+            const tds = row.querySelectorAll('td');
+            if (tds.length >= 2) {
+              let teamA = tds[0].textContent.trim();
+              let teamB = tds[1].textContent.trim();
+              if (teamA && teamB && !teamA.match(/Time/i) && !teamB.match(/Time/i)) {
+                games.push(`${teamA} v. ${teamB}`);
+              }
+            }
+          });
+        });
+      }
+      // Remove duplicates
+      return Array.from(new Set(games));
+    }
+
+    function showNoGames() {
+      const fallback = "Las Vegas v. New York\nConnecticut v. Dallas";
+      scheduleBlock.innerHTML = `
+        <div class="date-header">${todayStr()} – No games found</div>
+        <div class="games-list" id="gamesList">${fallback}</div>
+        <div class="empty">No games loaded. Paste games manually if needed.</div>
+        <div style="text-align:center;">
+          <button class="copy-btn" onclick="copyGames()">Copy Example</button>
+        </div>
+      `;
+    }
+
+    function renderGames(games) {
+      const formatted = games.join('\n');
+      scheduleBlock.innerHTML = `
+        <div class="date-header">${todayStr()}</div>
+        <div class="games-list" id="gamesList">${formatted}</div>
+        <div style="text-align:center;">
+          <button class="copy-btn" onclick="copyGames()">Copy Games</button>
+        </div>
+      `;
+      infoDiv.textContent = "Schedule loaded! Copy and paste into your player prop tool.";
+    }
+
+    window.copyGames = function() {
+      const text = document.getElementById('gamesList').textContent;
+      navigator.clipboard.writeText(text);
+      const btns = document.querySelectorAll('.copy-btn');
+      btns.forEach(btn => btn.textContent = 'Copied!');
+      setTimeout(() => btns.forEach(btn => btn.textContent = 'Copy Games'), 1400);
+    };
+
+    // Auto-load on page open
+    window.onload = fetchSchedule;
+  </script>
 </body>
 </html>
