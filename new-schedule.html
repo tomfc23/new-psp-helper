@@ -116,10 +116,10 @@
                 <textarea 
                     id="gamesTextarea" 
                     class="games-textarea" 
-                    placeholder="Minnesota v. Dallas&#10;Indiana v. Phoenix&#10;New York v. Las Vegas&#10;Connecticut v. Chicago"
+                    placeholder="Storm v. Dream&#10;Mercury v. Wings&#10;Aces v. Fever&#10;Mystics v. Lynx&#10;Sparks v. Liberty"
                 ></textarea>
                 <div class="format-example">
-                    Format: "Location A v. Location B" (one game per line)
+                    Format: "Location v. Location", "Mascot v. Mascot", or "Full Team Name v. Full Team Name" (e.g., "Storm v. Dream", "Minnesota v. Dallas", "Minnesota Lynx v. Dallas Wings")
                 </div>
             </div>
             <div class="bulk-input-section" id="scheduleSection" style="margin-top: 25px;">
@@ -154,7 +154,8 @@
         let wnbaTeamData = {};
         let teamMascotToLocation = {}; // e.g. "Lynx" => "Minnesota"
         let teamNameToLocation = {}; // e.g. "Minnesota Lynx" => "Minnesota"
-        let locationSet = new Set();  // For fast location checks
+        let mascotToFullName = {}; // e.g. "lynx" => "Minnesota Lynx"
+        let locationSet = new Set();
         let leagueAverages = {};
         let dataLoaded = false;
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS652UqISW_M19VIeGamAl190YuSBpHUql9orzm7DmJW8FFA_7d7RZ-smWIQY4f3TzFA5qqygv750pI/pub?output=csv";
@@ -178,41 +179,39 @@
             "Los Angeles", "Minnesota", "New York", "Phoenix", "Seattle", "Washington"
         ];
 
-        // Helper: extract location from "Minnesota Lynx" => "Minnesota"
+        // --- Helper Functions ---
         function getLocationFromFullName(fullName) {
             for (let loc of LOCATIONS) {
                 if (fullName.startsWith(loc + " ")) return loc;
             }
-            // fallback: first word
             return fullName.split(" ")[0];
         }
 
-        // Helper: get location from any input string (mascot, location, full name)
         function getLocationFromInput(teamName) {
             if (!teamName) return '';
             const lower = teamName.trim().toLowerCase();
-            // Check if already a known location (case-insensitive)
+            // Check for location (case-insensitive)
             for (let loc of LOCATIONS) {
                 if (loc.toLowerCase() === lower) return loc;
             }
-            // Try full name mapping
+            // Full team name exact match
             if (teamNameToLocation[lower]) return teamNameToLocation[lower];
-            // Try mascot mapping
+            // Mascot match
             if (teamMascotToLocation[lower]) return teamMascotToLocation[lower];
-            // Try matching mascot to fullName ('Storm' => 'Seattle')
+            // Partial mascot match for full name (e.g. "Lynx")
             for (let mascot in teamMascotToLocation) {
                 if (mascot === lower) return teamMascotToLocation[mascot];
             }
-            // Try matching partial fullName (e.g., "Seattle Storm" with input "Storm")
+            // Partial match (e.g. "Seattle Storm" with "Storm")
             for (let fullName in teamNameToLocation) {
                 if (fullName.endsWith(' ' + lower)) return teamNameToLocation[fullName];
             }
-            // As a last resort, for "Seattle Storm" or similar, use all but last word
+            // Try "Location Mascot"
             const words = teamName.split(" ");
             if (words.length > 1 && LOCATIONS.includes(words.slice(0, -1).join(" "))) {
                 return words.slice(0, -1).join(" ");
             }
-            // Fallback: return input as-is
+            // Fallback: return as-is
             return teamName;
         }
 
@@ -236,10 +235,11 @@
                         "Ast/TO": parseFloat(astTO) || 0,
                         "Reb/G": parseFloat(rebG) || 0
                     };
-                    // For mascot and full name mapping
+                    // Mascot and full name mapping
                     const mascot = fullName.split(" ").slice(-1)[0];
                     teamMascotToLocation[mascot.toLowerCase()] = location;
                     teamNameToLocation[fullName.toLowerCase()] = location;
+                    mascotToFullName[mascot.toLowerCase()] = fullName;
                     locationSet.add(location);
                 }
             }
@@ -333,7 +333,7 @@
             }
         }
 
-        // --- Team finding by location ---
+        // --- Team finding by location/mascot/fullname ---
         function findTeamByLocation(input) {
             if (!input || !dataLoaded) return null;
             const searchTerm = getLocationFromInput(input);
@@ -345,12 +345,16 @@
             return null;
         }
 
-        // --- Team stats display (location only) ---
+        // --- Team stats display (show both location & mascot) ---
         function displayTeamStats(teamKey, teamData) {
+            const fullTeamName = teamData.fullName; // e.g., "Minnesota Lynx"
+            const location = teamData.location;
+            const mascot = fullTeamName.split(" ").slice(-1)[0];
+            const displayName = `<span style="color:var(--primary);">${location}</span> <span style="color:#fff;">${mascot}</span>`;
             const teamStatsDiv = document.createElement('div');
             teamStatsDiv.className = 'team-stats';
             teamStatsDiv.innerHTML = `
-                <h2 class="team-location">${teamData.location}</h2>
+                <h2 class="team-location">${displayName}</h2>
                 <div class="stat-item">
                     <span class="stat-label">Points Per Game:</span>
                     <span class="stat-value ${getRankingClass(teamData.PPG, 'PPG')}">${teamData.PPG.toFixed(1)}</span>
@@ -371,18 +375,18 @@
             return teamStatsDiv;
         }
 
-        // --- Comparison summary (locations only) ---
+        // --- Comparison summary (location & mascot) ---
         function findBestWorstTeams(displayedTeams) {
             if (displayedTeams.length === 0) return null;
             const stats = ['PPG', '3P%', 'Ast/TO', 'Reb/G'];
             const comparison = {};
             stats.forEach(stat => {
-                let best = { team: null, value: -Infinity };
+                let best = { team: null, value: -Infinity, teamData: null };
                 displayedTeams.forEach(teamInfo => {
                     const teamData = teamInfo.data;
                     const value = teamData[stat];
                     if (value > best.value) {
-                        best = { team: teamData.location, value: value };
+                        best = { team: teamData.location, value: value, teamData: teamData };
                     }
                 });
                 comparison[stat] = { best };
@@ -404,10 +408,14 @@
                     if (stat === 'Ast/TO') return value.toFixed(2);
                     return value.toFixed(1);
                 };
+                // Use both location & mascot
+                const bestTeamData = data.best.teamData;
+                const mascot = bestTeamData ? bestTeamData.fullName.split(" ").slice(-1)[0] : data.best.team;
+                const bestDisplayName = bestTeamData ? `${bestTeamData.location} ${mascot}` : data.best.team;
                 summaryHTML += `
                     <div class="stat-item">
                         <span class="stat-label">Best ${statLabels[stat]}:</span>
-                        <span class="stat-value good-rank">${data.best.team} (${formatValue(stat, data.best.value)})</span>
+                        <span class="stat-value good-rank">${bestDisplayName} (${formatValue(stat, data.best.value)})</span>
                     </div>
                 `;
             });
@@ -432,7 +440,7 @@
             }
             const teamNames = parseGamesFromText(gamesText);
             if (teamNames.length === 0) {
-                errorMessage.textContent = 'No valid games found. Please check the format: "Location A v. Location B"';
+                errorMessage.textContent = 'No valid games found. Please check the format: "Storm v. Dream", "Minnesota v. Dallas", etc.';
                 return;
             }
             loadingIndicator.style.display = 'block';
@@ -471,7 +479,7 @@
             if ((e.key === 'Enter' && e.ctrlKey) && dataLoaded) fetchStats();
         });
 
-        // --- Schedule loading (location only) ---
+        // --- Schedule loading (location or mascot) ---
         function setDefaultScheduleDate() {
             const now = new Date();
             const yyyy = now.getFullYear();
@@ -512,10 +520,10 @@
                     else row = lines[i].split(',').map(cell => cell.trim());
                     const csvDate = parseCsvDate(row[dateIdx]);
                     if (csvDate === selectedDate) {
-                        // Always map to locations
-                        const awayLoc = getLocationFromInput(row[visitorIdx]);
-                        const homeLoc = getLocationFromInput(row[homeIdx]);
-                        gamesForDate.push(`${awayLoc} v. ${homeLoc}`);
+                        // Accept mascots or locations
+                        const away = row[visitorIdx];
+                        const home = row[homeIdx];
+                        gamesForDate.push(`${away} v. ${home}`);
                     }
                 }
                 if (gamesForDate.length === 0) {
