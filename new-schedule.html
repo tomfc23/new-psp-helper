@@ -507,11 +507,16 @@
                 const csvText = await fetchCSVData(scheduleCsvUrl);
                 const lines = csvText.trim().split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
-                const dateIdx = headers.indexOf("Date");
-                const visitorIdx = headers.indexOf("Visitor/Neutral");
-                const homeIdx = headers.indexOf("Home/Neutral");
+                // --- Robust header normalization below ---
+                function normalize(str) {
+                    return str.trim().replace(/\s+/g, ' ').toLowerCase();
+                }
+                const normalizedHeaders = headers.map(normalize);
+                const dateIdx = normalizedHeaders.indexOf(normalize("Date"));
+                const visitorIdx = normalizedHeaders.indexOf(normalize("Visitor/Neutral"));
+                const homeIdx = normalizedHeaders.indexOf(normalize("Home/Neutral"));
                 if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1)
-                    throw new Error("Unexpected CSV format for schedule.");
+                    throw new Error("Unexpected CSV format for schedule. Headers: " + headers.join('|'));
                 const gamesForDate = [];
                 for (let i = 1; i < lines.length; i++) {
                     let row = [];
