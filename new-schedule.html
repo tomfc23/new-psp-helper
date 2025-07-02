@@ -336,10 +336,11 @@
             if (!input || !dataLoaded) return null;
             const searchTerm = getLocationFromInput(input);
             for (const team of Object.values(wnbaTeamData)) {
-                if (team.location === searchTerm) {
-                    return { key: team.location, data: team };
-                }
-            }
+    if (team.location === searchTerm || team.fullName.toLowerCase() === searchTerm.toLowerCase()) {
+        return { key: team.location, data: team };
+    }
+}
+
             return null;
         }
 
