@@ -18,6 +18,7 @@
     .player-list li { margin-bottom: 2px; }
     .no-player { color: #ff9999; }
     #error { color: #ff605c; margin-top: 12px; min-height: 24px; }
+    #error[aria-live] { display: block; }
     #loadingIndicator { display: none; }
   </style>
 </head>
@@ -46,36 +47,30 @@
 
     <button id="goBtn" type="button">Show Favorable Players</button>
 
-    <div id="error"></div>
+    <div id="error" aria-live="polite"></div>
     <div id="results"></div>
   </div>
   <script>
-    // --- TEAM NAME MAPPING ---
-    // Map from schedule name to player CSV abbreviation
     const teamNameToAbbr = {
-      "Aces": "LVA",
-      "Dream": "ATL",
-      "Fever": "IND",
-      "Liberty": "NYL",
-      "Lynx": "MIN",
-      "Mercury": "PHO",
-      "Sky": "CHI",
-      "Sparks": "LAS",
-      "Storm": "SEA",
-      "Sun": "CON",
-      "Wings": "DAL",
-      "Mystics": "WAS"
+      "Aces": "LVA", "Dream": "ATL", "Fever": "IND", "Liberty": "NYL",
+      "Lynx": "MIN", "Mercury": "PHO", "Sky": "CHI", "Sparks": "LAS",
+      "Storm": "SEA", "Sun": "CON", "Wings": "DAL", "Mystics": "WAS"
     };
 
-    // --- DATA URLS ---
+    // Optional: fallback aliases for common mislabels
+    const altTeamAliases = {
+      "las vegas": "Aces", "new york": "Liberty", "washington": "Mystics",
+      "los angeles": "Sparks", "phoenix": "Mercury", "connecticut": "Sun",
+      "chicago": "Sky", "seattle": "Storm", "minnesota": "Lynx",
+      "atlanta": "Dream", "dallas": "Wings", "indiana": "Fever"
+    };
+
     const PLAYER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_-6UY7sL7jnnuMH1kmH3AqI5w5GcWtfYstY1PaQkpQP03i0T-Ogl7jBQv8OatEeUXduxQ3ThsYay7/pub?output=csv";
     const SCHEDULE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vROx4fkNFd-O74kZAlxX4L6cZT9Q8In931Wdwv_IkfkV_5AO2sOTrwlQlOFJZYkhu3fxB0QFygwI4_j/pub?output=csv";
 
-    let wnbaPlayersByTeam = {}; // { "LAS": [playerObj, ...], ... }
+    let wnbaPlayersByTeam = {};
     let playerCSVLoaded = false;
 
-    // --- PLAYER CSV PARSER ---
-    // Auto-detects tab or comma separation
     function parsePlayerCSV(text) {
       const rows = text.trim().split('\n');
       const sep = rows[0].includes('\t') ? '\t' : ',';
@@ -86,16 +81,15 @@
         if (cols.length < headers.length) continue;
         const obj = {};
         headers.forEach((h, idx) => obj[h] = cols[idx] || "");
-        ['PTS','AST','TRB','3P'].forEach(stat => obj[stat]=parseFloat(obj[stat])||0);
+        ['PTS','AST','TRB','3P'].forEach(stat => obj[stat] = parseFloat(obj[stat]) || 0);
         const team = obj.Team;
-        if (!team) return;
+        if (!team) continue;
         if (!data[team]) data[team] = [];
         data[team].push(obj);
       }
       return data;
     }
 
-    // --- LOAD PLAYER DATA ---
     async function loadPlayers() {
       try {
         const resp = await fetch(PLAYER_CSV_URL);
@@ -108,33 +102,27 @@
       }
     }
 
-    // --- SCHEDULE PARSER ---
     function parseSchedule(text) {
       const games = [];
       text.split('\n').forEach(line => {
-        let m = line.match(/(.+?)\s+v[\.s]*\s+(.+)/i);
-        if (m && m[1] && m[2]) {
-          games.push([m[1].trim(), m[2].trim()]);
-        }
+        const m = line.match(/(.+?)\s*v[\.s]*\s*(.+)/i);
+        if (m && m[1] && m[2]) games.push([m[1].trim(), m[2].trim()]);
       });
       return games;
     }
 
-    // --- TEAM RESOLVER ---
     function resolveTeam(name) {
-      // Try abbreviation mapping first
-      const abbr = teamNameToAbbr[name.trim()];
-      if (abbr && wnbaPlayersByTeam[abbr]) return abbr;
-      // Fallback: check direct match or partial (legacy compatibility)
+      name = name.trim();
+      if (teamNameToAbbr[name]) return teamNameToAbbr[name];
+      const alias = altTeamAliases[name.toLowerCase()];
+      if (alias && teamNameToAbbr[alias]) return teamNameToAbbr[alias];
       name = name.toLowerCase();
       for (const team in wnbaPlayersByTeam) {
-        if (team.toLowerCase() === name) return team;
-        if (team.toLowerCase().includes(name)) return team;
+        if (team.toLowerCase() === name || team.toLowerCase().includes(name)) return team;
       }
       return null;
     }
 
-    // --- MAIN LOGIC ---
     function showFavorablePlayers() {
       const errorDiv = document.getElementById('error');
       errorDiv.textContent = "";
@@ -152,27 +140,26 @@
         return;
       }
 
-      const propStat = document.getElementById('propStat').value;
-      const propStatLabel = document.getElementById('propStat').options[document.getElementById('propStat').selectedIndex].text;
-      const propValue = parseFloat(document.getElementById('propValue').value) || 0;
-
+      const stat = document.getElementById('propStat').value;
+      const statLabel = document.getElementById('propStat').selectedOptions[0].text;
+      const value = parseFloat(document.getElementById('propValue').value) || 0;
       let anyResults = false;
 
       schedule.forEach(([teamA, teamB]) => {
         [teamA, teamB].forEach(teamName => {
-          const resolvedTeam = resolveTeam(teamName);
+          const resolved = resolveTeam(teamName);
           let html = `<div class="game-block"><div class="team-title">${teamName}</div>`;
-          if (resolvedTeam && wnbaPlayersByTeam[resolvedTeam]) {
-            const favorable = wnbaPlayersByTeam[resolvedTeam]
-              .filter(p => p[propStat] >= propValue)
-              .sort((a,b)=>b[propStat]-a[propStat]);
-            if (favorable.length) {
+          if (resolved && wnbaPlayersByTeam[resolved]) {
+            const matches = wnbaPlayersByTeam[resolved]
+              .filter(p => p[stat] >= value)
+              .sort((a,b)=>b[stat]-a[stat]);
+            if (matches.length) {
               anyResults = true;
-              html += `<ul class="player-list">` + favorable.map(
-                p => `<li><b>${p.Player}</b> — ${p[propStat]} ${propStatLabel}</li>`
+              html += `<ul class="player-list">` + matches.map(
+                p => `<li><b>${p.Player}</b> — ${p[stat]} ${statLabel}</li>`
               ).join('') + `</ul>`;
             } else {
-              html += `<div class="no-player">No players average ${propValue}+ ${propStatLabel}.</div>`;
+              html += `<div class="no-player">No players average ${value}+ ${statLabel}.</div>`;
             }
           } else {
             html += `<div class="no-player">Team not found in player database.</div>`;
@@ -187,7 +174,6 @@
       }
     }
 
-    // --- SCHEDULE CSV (DATE) LOGIC ---
     function setDefaultScheduleDate() {
       const now = new Date();
       const yyyy = now.getFullYear();
@@ -196,9 +182,8 @@
       document.getElementById('scheduleDate').value = `${yyyy}-${mm}-${dd}`;
     }
 
-    function parseCsvDate(csvDateStr) {
-      // Accepts "Wed, Jul 3, 2024" or "Jul 3, 2024"
-      const d = new Date(csvDateStr.replace(/^\w+, /, ''));
+    function parseCsvDate(str) {
+      const d = new Date(str.replace(/^\w+, /, ''));
       if (isNaN(d)) return null;
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -207,54 +192,48 @@
     }
 
     async function loadScheduleForDate() {
-      const selectedDate = document.getElementById('scheduleDate').value;
+      const selected = document.getElementById('scheduleDate').value;
       const errorDiv = document.getElementById('error');
-      const loadingIndicator = document.getElementById('loadingIndicator');
-      if (!selectedDate) {
+      const loading = document.getElementById('loadingIndicator');
+      if (!selected) {
         errorDiv.textContent = "Please select a date.";
         return;
       }
       errorDiv.textContent = "";
-      loadingIndicator.style.display = "inline";
+      loading.style.display = "inline";
       try {
         const resp = await fetch(SCHEDULE_CSV_URL);
         if (!resp.ok) throw new Error("Failed to fetch schedule CSV");
-        const csvText = await resp.text();
-        const lines = csvText.trim().split('\n');
+        const csv = await resp.text();
+        const lines = csv.trim().split('\n');
         const headers = lines[0].split(',').map(h => h.trim());
-        function normalize(str) {
-          return str.trim().replace(/\s+/g, ' ').toLowerCase();
-        }
-        const normalizedHeaders = headers.map(normalize);
-        const dateIdx = normalizedHeaders.indexOf(normalize("Date"));
-        const visitorIdx = normalizedHeaders.indexOf(normalize("Visitor/Neutral"));
-        const homeIdx = normalizedHeaders.indexOf(normalize("Home/Neutral"));
+        const norm = s => s.trim().toLowerCase();
+        const dateIdx = headers.findIndex(h => norm(h) === "date");
+        const visitorIdx = headers.findIndex(h => norm(h).includes("visitor"));
+        const homeIdx = headers.findIndex(h => norm(h).includes("home"));
         if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1)
-          throw new Error("Unexpected CSV format for schedule. Headers: " + headers.join('|'));
-        const gamesForDate = [];
+          throw new Error("Unexpected CSV format for schedule.");
+        const games = [];
         for (let i = 1; i < lines.length; i++) {
-          let row = [];
-          let match = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-          if (match) row = match.map(s => s.replace(/^"|"$/g, '').trim());
-          else row = lines[i].split(',').map(cell => cell.trim());
-          const csvDate = parseCsvDate(row[dateIdx]);
-          if (csvDate === selectedDate) {
-            const away = row[visitorIdx];
-            const home = row[homeIdx];
-            gamesForDate.push(`${away} v. ${home}`);
+          let row = lines[i].split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
+          const gameDate = parseCsvDate(row[dateIdx]);
+          if (gameDate === selected) {
+            games.push(`${row[visitorIdx]} v. ${row[homeIdx]}`);
           }
         }
-        if (gamesForDate.length === 0) {
-          errorDiv.textContent = "No games scheduled for that date.";
-        } else {
-          document.getElementById('schedule').value = gamesForDate.join('\n');
-        }
+        document.getElementById('schedule').value = games.length ? games.join('\n') : "";
+        if (!games.length) errorDiv.textContent = "No games scheduled for that date.";
       } catch (err) {
         errorDiv.textContent = "Error loading schedule: " + err.message;
       } finally {
-        loadingIndicator.style.display = "none";
+        loading.style.display = "none";
       }
     }
+
+    const statDefaults = { PTS: 12, AST: 5, TRB: 6, "3P": 2 };
+    document.getElementById('propStat').onchange = e => {
+      document.getElementById('propValue').value = statDefaults[e.target.value] || 0;
+    };
 
     document.getElementById('goBtn').onclick = showFavorablePlayers;
     document.getElementById('loadScheduleButton').onclick = loadScheduleForDate;
