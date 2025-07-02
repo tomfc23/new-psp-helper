@@ -192,43 +192,68 @@
     }
 
     async function loadScheduleForDate() {
-      const selected = document.getElementById('scheduleDate').value;
-      const errorDiv = document.getElementById('error');
-      const loading = document.getElementById('loadingIndicator');
-      if (!selected) {
-        errorDiv.textContent = "Please select a date.";
-        return;
+  const selected = document.getElementById('scheduleDate').value;
+  const errorDiv = document.getElementById('error');
+  const loading = document.getElementById('loadingIndicator');
+  if (!selected) {
+    errorDiv.textContent = "Please select a date.";
+    return;
+  }
+  errorDiv.textContent = "";
+  loading.style.display = "inline";
+  try {
+    const resp = await fetch(SCHEDULE_CSV_URL);
+    if (!resp.ok) throw new Error("Failed to fetch schedule CSV");
+    const csv = await resp.text();
+    const lines = csv.trim().split('\n');
+
+    // Handle headers
+    const headers = lines[0].split(',').map(h => h.trim());
+    const normalize = s => s.trim().toLowerCase();
+    const dateIdx = headers.findIndex(h => normalize(h) === "date");
+    const visitorIdx = headers.findIndex(h => normalize(h).includes("visitor"));
+    const homeIdx = headers.findIndex(h => normalize(h).includes("home"));
+    if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1) {
+      throw new Error("Unexpected CSV format. Headers: " + headers.join(" | "));
+    }
+
+    const games = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const raw = lines[i].split(',');
+      const row = [];
+
+      // Recombine columns in case the date contains a comma
+      if (raw.length >= 4) {
+        // "Fri, May 16, 2025" split into 3 parts → fix by joining first 3
+        row[dateIdx] = raw.slice(0, 3).join(',').trim();
+        row[visitorIdx] = raw[3].trim();
+        row[homeIdx] = raw[4] ? raw[4].trim() : "";
+      } else {
+        // Fallback to default split
+        row[dateIdx] = raw[dateIdx]?.trim();
+        row[visitorIdx] = raw[visitorIdx]?.trim();
+        row[homeIdx] = raw[homeIdx]?.trim();
       }
-      errorDiv.textContent = "";
-      loading.style.display = "inline";
-      try {
-        const resp = await fetch(SCHEDULE_CSV_URL);
-        if (!resp.ok) throw new Error("Failed to fetch schedule CSV");
-        const csv = await resp.text();
-        const lines = csv.trim().split('\n');
-        const headers = lines[0].split(',').map(h => h.trim());
-        const norm = s => s.trim().toLowerCase();
-        const dateIdx = headers.findIndex(h => norm(h) === "date");
-        const visitorIdx = headers.findIndex(h => norm(h).includes("visitor"));
-        const homeIdx = headers.findIndex(h => norm(h).includes("home"));
-        if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1)
-          throw new Error("Unexpected CSV format for schedule.");
-        const games = [];
-        for (let i = 1; i < lines.length; i++) {
-          let row = lines[i].split(',').map(cell => cell.replace(/^"|"$/g, '').trim());
-          const gameDate = parseCsvDate(row[dateIdx]);
-          if (gameDate === selected) {
-            games.push(`${row[visitorIdx]} v. ${row[homeIdx]}`);
-          }
-        }
-        document.getElementById('schedule').value = games.length ? games.join('\n') : "";
-        if (!games.length) errorDiv.textContent = "No games scheduled for that date.";
-      } catch (err) {
-        errorDiv.textContent = "Error loading schedule: " + err.message;
-      } finally {
-        loading.style.display = "none";
+
+      const csvDate = parseCsvDate(row[dateIdx]);
+      if (csvDate === selected && row[visitorIdx] && row[homeIdx]) {
+        games.push(`${row[visitorIdx]} v. ${row[homeIdx]}`);
       }
     }
+
+    if (games.length > 0) {
+      document.getElementById('schedule').value = games.join('\n');
+    } else {
+      errorDiv.textContent = "No games scheduled for that date.";
+    }
+  } catch (err) {
+    errorDiv.textContent = "Error loading schedule: " + err.message;
+  } finally {
+    loading.style.display = "none";
+  }
+}
+
 
     const statDefaults = { PTS: 12, AST: 5, TRB: 6, "3P": 2 };
     document.getElementById('propStat').onchange = e => {
