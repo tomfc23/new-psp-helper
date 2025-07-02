@@ -110,15 +110,17 @@
             <h1>WNBA PSP Helper</h1>
         </header>
         <div class="input-section">
-           
+            <div class="data-status" id="dataStatus">Loading WNBA team data...</div>
             <div class="bulk-input-section">
-                <label class="bulk-input-label" for="gamesTextarea">Schedule will be loaded below:</label>
+                <label class="bulk-input-label" for="gamesTextarea">Paste your games list:</label>
                 <textarea 
                     id="gamesTextarea" 
                     class="games-textarea" 
-                    placeholder="Schedule will be loaded here. Make changes accordingly"
+                    placeholder="Minnesota v. Dallas&#10;Indiana v. Chicago&#10;Las Vegas v. New York&#10;Phoenix v. Seattle"
                 ></textarea>
-                
+                <div class="format-example">
+                    Format: "Location v. Location" or "Full Team Name v. Full Team Name" (e.g., "Minnesota v. Dallas", "Minnesota Lynx v. Dallas Wings")
+                </div>
             </div>
             <div class="bulk-input-section" id="scheduleSection" style="margin-top: 25px;">
                 <label class="bulk-input-label" for="scheduleDate">Load Schedule by Date:</label>
@@ -126,7 +128,7 @@
                 <button id="loadScheduleButton" style="background-color:#17a2b8;">Load Schedule</button>
             </div>
             <div class="button-group">
-                <button id="fetchButton">Get Stats</button>
+                <button id="fetchButton" disabled>Get Stats</button>
                 <button id="scheduleButton" onclick="window.open('wnba-schedule.html', '_blank')">Get Schedule</button>
                 <button id="clearButton">Clear All</button>
                 <button id="explButton" onclick="explain()">Stat Explanation</button>
