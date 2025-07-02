@@ -188,32 +188,39 @@
         }
 
         function getLocationFromInput(teamName) {
-            if (!teamName) return '';
-            const lower = teamName.trim().toLowerCase();
-            // Check for location (case-insensitive)
-            for (let loc of LOCATIONS) {
-                if (loc.toLowerCase() === lower) return loc;
-            }
-            // Full team name exact match
-            if (teamNameToLocation[lower]) return teamNameToLocation[lower];
-            // Mascot match
-            if (teamMascotToLocation[lower]) return teamMascotToLocation[lower];
-            // Partial mascot match for full name (e.g. "Lynx")
-            for (let mascot in teamMascotToLocation) {
-                if (mascot === lower) return teamMascotToLocation[mascot];
-            }
-            // Partial match (e.g. "Seattle Storm" with "Storm")
-            for (let fullName in teamNameToLocation) {
-                if (fullName.endsWith(' ' + lower)) return teamNameToLocation[fullName];
-            }
-            // Try "Location Mascot"
-            const words = teamName.split(" ");
-            if (words.length > 1 && LOCATIONS.includes(words.slice(0, -1).join(" "))) {
-                return words.slice(0, -1).join(" ");
-            }
-            // Fallback: return as-is
-            return teamName;
-        }
+    if (!teamName) return '';
+    const lower = teamName.trim().toLowerCase();
+
+    // Check for location match
+    for (let loc of LOCATIONS) {
+        if (loc.toLowerCase() === lower) return loc;
+    }
+
+    // Check if it's a full team name (e.g., "Dallas Wings")
+    if (teamNameToLocation[lower]) {
+        return teamNameToLocation[lower];
+    }
+
+    // Check if it's a mascot only (e.g., "Wings")
+    if (teamMascotToLocation[lower]) {
+        return teamMascotToLocation[lower];
+    }
+
+    // Try partial match: ends with mascot (e.g., "Minnesota Lynx")
+    for (let fullName in teamNameToLocation) {
+        if (fullName.endsWith(' ' + lower)) return teamNameToLocation[fullName];
+    }
+
+    // Try "Location Mascot" input (e.g., "Dallas Wings")
+    const words = teamName.split(" ");
+    if (words.length > 1 && LOCATIONS.includes(words.slice(0, -1).join(" "))) {
+        return words.slice(0, -1).join(" ");
+    }
+
+    // Fallback
+    return teamName;
+}
+
 
         // --- CSV parsing and mapping ---
         function parseCSV(text) {
@@ -236,9 +243,9 @@
                         "Reb/G": parseFloat(rebG) || 0
                     };
                     // Mascot and full name mapping
-                    const mascot = fullName.split(" ").slice(-1)[0];
-                    teamMascotToLocation[mascot.toLowerCase()] = location;
-                    teamNameToLocation[fullName.toLowerCase()] = location;
+                   const mascot = fullName.split(" ").slice(-1)[0];
+teamMascotToLocation[mascot.toLowerCase()] = location;
+teamNameToLocation[fullName.toLowerCase()] = location;
                     mascotToFullName[mascot.toLowerCase()] = fullName;
                     locationSet.add(location);
                 }
