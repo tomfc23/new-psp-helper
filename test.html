@@ -279,7 +279,7 @@
                 leagueAverages = calculateLeagueAverages();
                 const teamCount = Object.keys(wnbaTeamData).length / 2; // Each team indexed by location and full name
                 if (teamCount > 0) {
-                    dataStatus.textContent = `✓ Loaded data for ${teamCount} WNBA teams`;
+              
                     dataStatus.style.backgroundColor = "#d4edda";
                     dataStatus.style.color = "#155724";
                     dataLoaded = true;
