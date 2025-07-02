@@ -154,6 +154,7 @@
         let wnbaTeamData = {};
         let teamMascotToLocation = {}; // e.g. "Lynx" => "Minnesota"
         let teamNameToLocation = {}; // e.g. "Minnesota Lynx" => "Minnesota"
+        let locationSet = new Set();  // For fast location checks
         let leagueAverages = {};
         let dataLoaded = false;
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS652UqISW_M19VIeGamAl190YuSBpHUql9orzm7DmJW8FFA_7d7RZ-smWIQY4f3TzFA5qqygv750pI/pub?output=csv";
@@ -171,19 +172,48 @@
         const scheduleDateInput = document.getElementById('scheduleDate');
         const loadScheduleButton = document.getElementById('loadScheduleButton');
 
-        // Extract location from "Minnesota Lynx" => "Minnesota"
+        // List of all possible locations (update if teams change!)
+        const LOCATIONS = [
+            "Atlanta", "Chicago", "Connecticut", "Dallas", "Indiana", "Las Vegas",
+            "Los Angeles", "Minnesota", "New York", "Phoenix", "Seattle", "Washington"
+        ];
+
+        // Helper: extract location from "Minnesota Lynx" => "Minnesota"
         function getLocationFromFullName(fullName) {
-            // Handle multi-word locations: New York Liberty, Los Angeles Sparks, Las Vegas Aces, etc.
-            // Use a WNBA locations list for accuracy
-            const locations = [
-                "Atlanta", "Chicago", "Connecticut", "Dallas", "Indiana", "Las Vegas",
-                "Los Angeles", "Minnesota", "New York", "Phoenix", "Seattle", "Washington"
-            ];
-            for (let loc of locations) {
+            for (let loc of LOCATIONS) {
                 if (fullName.startsWith(loc + " ")) return loc;
             }
-            // fallback: return first word
+            // fallback: first word
             return fullName.split(" ")[0];
+        }
+
+        // Helper: get location from any input string (mascot, location, full name)
+        function getLocationFromInput(teamName) {
+            if (!teamName) return '';
+            const lower = teamName.trim().toLowerCase();
+            // Check if already a known location (case-insensitive)
+            for (let loc of LOCATIONS) {
+                if (loc.toLowerCase() === lower) return loc;
+            }
+            // Try full name mapping
+            if (teamNameToLocation[lower]) return teamNameToLocation[lower];
+            // Try mascot mapping
+            if (teamMascotToLocation[lower]) return teamMascotToLocation[lower];
+            // Try matching mascot to fullName ('Storm' => 'Seattle')
+            for (let mascot in teamMascotToLocation) {
+                if (mascot === lower) return teamMascotToLocation[mascot];
+            }
+            // Try matching partial fullName (e.g., "Seattle Storm" with input "Storm")
+            for (let fullName in teamNameToLocation) {
+                if (fullName.endsWith(' ' + lower)) return teamNameToLocation[fullName];
+            }
+            // As a last resort, for "Seattle Storm" or similar, use all but last word
+            const words = teamName.split(" ");
+            if (words.length > 1 && LOCATIONS.includes(words.slice(0, -1).join(" "))) {
+                return words.slice(0, -1).join(" ");
+            }
+            // Fallback: return input as-is
+            return teamName;
         }
 
         // --- CSV parsing and mapping ---
@@ -197,9 +227,10 @@
                 if (team && fullName) {
                     let threePPercent = parseFloat(threeP) || 0;
                     if (threePPercent > 1) threePPercent = threePPercent / 100;
+                    const location = getLocationFromFullName(fullName);
                     data[team] = {
                         fullName: fullName,
-                        location: getLocationFromFullName(fullName),
+                        location: location,
                         PPG: parseFloat(PPG) || 0,
                         "3P%": threePPercent,
                         "Ast/TO": parseFloat(astTO) || 0,
@@ -207,8 +238,9 @@
                     };
                     // For mascot and full name mapping
                     const mascot = fullName.split(" ").slice(-1)[0];
-                    teamMascotToLocation[mascot.toLowerCase()] = getLocationFromFullName(fullName);
-                    teamNameToLocation[fullName.toLowerCase()] = getLocationFromFullName(fullName);
+                    teamMascotToLocation[mascot.toLowerCase()] = location;
+                    teamNameToLocation[fullName.toLowerCase()] = location;
+                    locationSet.add(location);
                 }
             }
             return data;
@@ -227,8 +259,8 @@
                 else if (trimmedLine.includes(' vs ')) parts = trimmedLine.split(' vs ');
                 else if (trimmedLine.includes(' v ')) parts = trimmedLine.split(' v ');
                 if (parts.length === 2) {
-                    const team1 = parts[0].trim();
-                    const team2 = parts[1].trim();
+                    const team1 = getLocationFromInput(parts[0].trim());
+                    const team2 = getLocationFromInput(parts[1].trim());
                     if (team1 && team2) {
                         teams.push(team1, team2);
                     }
@@ -301,33 +333,12 @@
             }
         }
 
-        // --- Team finding by location or mascot ---
-        function findTeamByLocationOrMascot(input) {
+        // --- Team finding by location ---
+        function findTeamByLocation(input) {
             if (!input || !dataLoaded) return null;
-            const searchTerm = input.toLowerCase().trim();
-            // Exact location match
+            const searchTerm = getLocationFromInput(input);
             for (const team of Object.values(wnbaTeamData)) {
-                if (team.location.toLowerCase() === searchTerm) {
-                    return { key: team.location, data: team };
-                }
-            }
-            // Mascot match
-            if (teamMascotToLocation[searchTerm]) {
-                const loc = teamMascotToLocation[searchTerm];
-                for (const team of Object.values(wnbaTeamData)) {
-                    if (team.location === loc) return { key: loc, data: team };
-                }
-            }
-            // Full name match
-            if (teamNameToLocation[searchTerm]) {
-                const loc = teamNameToLocation[searchTerm];
-                for (const team of Object.values(wnbaTeamData)) {
-                    if (team.location === loc) return { key: loc, data: team };
-                }
-            }
-            // Try partial match in full name
-            for (const team of Object.values(wnbaTeamData)) {
-                if (team.fullName.toLowerCase().includes(searchTerm) || team.location.toLowerCase().includes(searchTerm)) {
+                if (team.location === searchTerm) {
                     return { key: team.location, data: team };
                 }
             }
@@ -429,7 +440,7 @@
                 let foundTeams = [];
                 let notFoundTeams = [];
                 teamNames.forEach(teamSearch => {
-                    const teamResult = findTeamByLocationOrMascot(teamSearch);
+                    const teamResult = findTeamByLocation(teamSearch);
                     if (teamResult) {
                         if (!foundTeams.some(t => t.key === teamResult.key)) {
                             const teamStatsDiv = displayTeamStats(teamResult.key, teamResult.data);
@@ -501,18 +512,9 @@
                     else row = lines[i].split(',').map(cell => cell.trim());
                     const csvDate = parseCsvDate(row[dateIdx]);
                     if (csvDate === selectedDate) {
-                        // Show location only
-                        const awayTeamName = row[visitorIdx];
-                        const homeTeamName = row[homeIdx];
-                        let awayLoc = awayTeamName;
-                        let homeLoc = homeTeamName;
-                        // Try mapping to location
-                        if (teamNameToLocation[awayTeamName.toLowerCase()]) awayLoc = teamNameToLocation[awayTeamName.toLowerCase()];
-                        else if (teamMascotToLocation[awayTeamName.toLowerCase()]) awayLoc = teamMascotToLocation[awayTeamName.toLowerCase()];
-                        else if (awayTeamName.split(" ").length > 1) awayLoc = awayTeamName.split(" ").slice(0, -1).join(" ");
-                        if (teamNameToLocation[homeTeamName.toLowerCase()]) homeLoc = teamNameToLocation[homeTeamName.toLowerCase()];
-                        else if (teamMascotToLocation[homeTeamName.toLowerCase()]) homeLoc = teamMascotToLocation[homeTeamName.toLowerCase()];
-                        else if (homeTeamName.split(" ").length > 1) homeLoc = homeTeamName.split(" ").slice(0, -1).join(" ");
+                        // Always map to locations
+                        const awayLoc = getLocationFromInput(row[visitorIdx]);
+                        const homeLoc = getLocationFromInput(row[homeIdx]);
                         gamesForDate.push(`${awayLoc} v. ${homeLoc}`);
                     }
                 }
