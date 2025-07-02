@@ -3,126 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <title>WNBA Player Prop Helper</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body {
-      background: #171723;
-      color: #e0e0e0;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      margin: 0; padding: 0;
-      min-height: 100vh;
+    body { background: #15151a; color: #f0f0f8; font-family: sans-serif; margin: 0; padding: 0; }
+    .container { max-width: 700px; margin: 40px auto; background: #24243a; padding: 24px; border-radius: 12px; }
+    h1 { margin-top: 0; }
+    label { display: block; margin: 16px 0 6px; }
+    input, select, textarea {
+      width: 100%; background: #232332; color: #f0f0f8; border: 1px solid #555; padding: 8px; border-radius: 4px;
     }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 24px 16px;
-      background: #24243a;
-      border-radius: 18px;
-      box-shadow: 0 2px 18px #000a;
-    }
-    h1 { color: #b37bfa; text-align: center; margin-bottom: 8px;}
-    .description { color: #aaa; margin-bottom: 20px; text-align: center; }
-    .input-group { margin-bottom: 20px; }
-    label { font-weight: 600; color: #b37bfa; display: block; margin-bottom: 7px;}
-    textarea, select, input[type="number"], input[type="date"] {
-      width: 100%; font-size: 1rem;
-      border-radius: 14px; border: 2px solid #333;
-      background: #1b1b2f; color: #e0e0e0;
-      padding: 10px; margin-top: 4px; margin-bottom: 2px;
-      outline: none;
-      transition: border 0.2s;
-    }
-    textarea:focus, select:focus, input[type="number"]:focus, input[type="date"]:focus { border: 2px solid #b37bfa; }
-    .prop-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
-    .prop-controls label { margin: 0;}
-    button {
-      background: #b37bfa; color: #fff; border: none;
-      padding: 13px 23px; border-radius: 22px;
-      font-weight: bold; font-size: 1.1rem;
-      margin-top: 14px; cursor: pointer; transition: background 0.2s;
-    }
-    button:hover { background: #8d57e7; }
-    .results { margin-top: 30px;}
-    .game-block {
-      background: #292949;
-      border-radius: 14px;
-      margin-bottom: 23px;
-      padding: 20px;
-      box-shadow: 0 1px 7px #0007;
-    }
-    .team-title { color: #b37bfa; font-size: 1.2em; margin-bottom: 4px;}
-    .player-list { margin: 0 0 0 8px; padding: 0; }
-    .player-list li { margin-bottom: 4px; }
-    .no-player { color: #ff7474; }
-    .error { margin: 12px 0 0 0; color: #ff7474; text-align: center; font-weight: bold; }
-    .loading { text-align: center; color: #b37bfa; margin-bottom: 8px;}
-    .bulk-input-label { color: #b37bfa; font-weight: bold; margin-bottom: 5px; display: block; }
-    .format-example { font-size: 14px; color: #888; margin-top: 5px; font-style: italic; }
-    .schedule-section { margin-bottom: 15px; }
-    @media (max-width:600px){
-      .container { padding: 8px 3px;}
-      .prop-controls { flex-direction: column; align-items: stretch;}
-      button { width: 100%;}
-    }
+    button { margin-top: 20px; background: #743ad5; color: #fff; border: none; padding: 10px 16px; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #5a2dc7; }
+    #results .game-block { background: #33334b; margin: 16px 0; border-radius: 8px; padding: 12px; }
+    .team-title { font-weight: bold; margin-bottom: 6px; }
+    .player-list { list-style: none; padding-left: 0; }
+    .player-list li { margin-bottom: 2px; }
+    .no-player { color: #f88; }
+    #error { color: #ff605c; margin-top: 12px; min-height: 24px; }
+    #loadingIndicator { display: none; }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>WNBA Player Prop Helper</h1>
-    <div class="description">
-      Paste your WNBA games below, select a player prop, and instantly see which players from each team average above your chosen line!
-    </div>
+    <label for="propStat">Stat</label>
+    <select id="propStat">
+      <option value="PTS">Points</option>
+      <option value="AST">Assists</option>
+      <option value="TRB">Rebounds</option>
+      <option value="3P">3PM</option>
+    </select>
 
-    <div class="input-group">
-      <label class="bulk-input-label" for="schedule">Schedule (one game per line, e.g. <i>Las Vegas v. New York</i>):</label>
-      <textarea id="schedule" rows="5" placeholder="Las Vegas v. New York&#10;Connecticut v. Dallas"></textarea>
-      <div class="format-example">
-        Format: "Location v. Location" or "Full Team Name v. Full Team Name" (e.g., "Minnesota v. Dallas", "Minnesota Lynx v. Dallas Wings")
-      </div>
-    </div>
+    <label for="propValue">Minimum Stat Value</label>
+    <input type="number" id="propValue" value="12" min="0" step="1">
 
-    <!-- SCHEDULE DATE LOADING SECTION -->
-    <div class="input-group schedule-section">
-      <label class="bulk-input-label" for="scheduleDate">Load Schedule by Date:</label>
-      <input type="date" id="scheduleDate" style="max-width: 200px;">
-      <button id="loadScheduleButton" style="background-color:#17a2b8;">Load Schedule</button>
-      <div id="loadingIndicator" class="loading" style="display:none;">Loading schedule...</div>
-    </div>
+    <label for="scheduleDate">Schedule Date</label>
+    <input type="date" id="scheduleDate">
 
-    <div class="input-group prop-controls">
-      <label for="propStat">Prop Category:</label>
-      <select id="propStat">
-        <option value="PTS">Points</option>
-        <option value="AST">Assists</option>
-        <option value="TRB">Rebounds</option>
-        <option value="3P">3PM</option>
-      </select>
-      <label for="propValue">Min Value:</label>
-      <input type="number" id="propValue" min="0" step="1" value="15" style="width:80px;">
-      <button id="goBtn">Show Favorable Players</button>
-    </div>
-    <div id="error" class="error"></div>
-    <div id="results" class="results"></div>
+    <button id="loadScheduleButton" type="button">Load Schedule</button>
+    <span id="loadingIndicator">Loading…</span>
+
+    <label for="schedule">Schedule (paste or auto-load)</label>
+    <textarea id="schedule" rows="3" placeholder="e.g. Sparks v. Liberty"></textarea>
+
+    <button id="goBtn" type="button">Show Favorable Players</button>
+
+    <div id="error"></div>
+    <div id="results"></div>
   </div>
-
   <script>
-    // CSV sources
+    // --- TEAM NAME MAPPING ---
+    // Map from schedule name to player CSV abbreviation
+    const teamNameToAbbr = {
+      "Aces": "LVA",
+      "Dream": "ATL",
+      "Fever": "IND",
+      "Liberty": "NYL",
+      "Lynx": "MIN",
+      "Mercury": "PHO",
+      "Sky": "CHI",
+      "Sparks": "LAS",
+      "Storm": "SEA",
+      "Sun": "CON",
+      "Wings": "DAL",
+      "Mystics": "WAS"
+    };
+
+    // --- DATA URLS ---
     const PLAYER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_-6UY7sL7jnnuMH1kmH3AqI5w5GcWtfYstY1PaQkpQP03i0T-Ogl7jBQv8OatEeUXduxQ3ThsYay7/pub?output=csv";
     const SCHEDULE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vROx4fkNFd-O74kZAlxX4L6cZT9Q8In931Wdwv_IkfkV_5AO2sOTrwlQlOFJZYkhu3fxB0QFygwI4_j/pub?output=csv";
 
-    let wnbaPlayersByTeam = {}; // { "Las Vegas": [playerObj, ...], ... }
+    let wnbaPlayersByTeam = {}; // { "LAS": [playerObj, ...], ... }
     let playerCSVLoaded = false;
 
-    // CSV parsing helper
+    // --- PLAYER CSV PARSER ---
     function parsePlayerCSV(text) {
       const rows = text.trim().split('\n');
-      const headers = rows[0].split('\t').map(h => h.trim()); // Use tab as separator
+      const headers = rows[0].split('\t').map(h => h.trim());
       const data = {};
       for (let i = 1; i < rows.length; ++i) {
         const cols = rows[i].split('\t').map(cell => cell.trim());
         const obj = {};
         headers.forEach((h, idx) => obj[h] = cols[idx] || "");
-        // Make sure stat columns are numbers:
         ['PTS','AST','TRB','3P'].forEach(stat => obj[stat]=parseFloat(obj[stat])||0);
         const team = obj.Team;
         if (!team) return;
@@ -132,7 +93,7 @@
       return data;
     }
 
-    // Fetch and store player data
+    // --- LOAD PLAYER DATA ---
     async function loadPlayers() {
       try {
         const resp = await fetch(PLAYER_CSV_URL);
@@ -145,7 +106,7 @@
       }
     }
 
-    // Schedule parsing
+    // --- SCHEDULE PARSER ---
     function parseSchedule(text) {
       const games = [];
       text.split('\n').forEach(line => {
@@ -157,8 +118,12 @@
       return games;
     }
 
-    // Find team in player data (case insensitive, partial OK)
+    // --- TEAM RESOLVER ---
     function resolveTeam(name) {
+      // Try abbreviation mapping first
+      const abbr = teamNameToAbbr[name.trim()];
+      if (abbr && wnbaPlayersByTeam[abbr]) return abbr;
+      // Fallback: check direct match or partial (legacy compatibility)
       name = name.toLowerCase();
       for (const team in wnbaPlayersByTeam) {
         if (team.toLowerCase() === name) return team;
@@ -167,7 +132,7 @@
       return null;
     }
 
-    // Main logic to get favorable props
+    // --- MAIN LOGIC ---
     function showFavorablePlayers() {
       const errorDiv = document.getElementById('error');
       errorDiv.textContent = "";
@@ -213,7 +178,7 @@
       });
     }
 
-    // -------- SCHEDULE CSV (DATE) LOGIC --------
+    // --- SCHEDULE CSV (DATE) LOGIC ---
     function setDefaultScheduleDate() {
       const now = new Date();
       const yyyy = now.getFullYear();
@@ -241,7 +206,7 @@
         return;
       }
       errorDiv.textContent = "";
-      loadingIndicator.style.display = "block";
+      loadingIndicator.style.display = "inline";
       try {
         const resp = await fetch(SCHEDULE_CSV_URL);
         if (!resp.ok) throw new Error("Failed to fetch schedule CSV");
