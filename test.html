@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WNBA PSP Helper</title>
     <style>
-        :root {
+         :root {
             --primary: #6f42c1;
             --secondary: #ff4444;
             --background: #000000;
@@ -116,10 +116,10 @@
                 <textarea 
                     id="gamesTextarea" 
                     class="games-textarea" 
-                    placeholder="Storm v. Dream&#10;Mercury v. Wings&#10;Aces v. Fever&#10;Mystics v. Lynx&#10;Sparks v. Liberty"
+                    placeholder="Minnesota v. Dallas&#10;Indiana v. Chicago&#10;Las Vegas v. New York&#10;Phoenix v. Seattle"
                 ></textarea>
                 <div class="format-example">
-                    Format: "Location v. Location", "Mascot v. Mascot", or "Full Team Name v. Full Team Name" (e.g., "Storm v. Dream", "Minnesota v. Dallas", "Minnesota Lynx v. Dallas Wings")
+                    Format: "Location v. Location" or "Full Team Name v. Full Team Name" (e.g., "Minnesota v. Dallas", "Minnesota Lynx v. Dallas Wings")
                 </div>
             </div>
             <div class="bulk-input-section" id="scheduleSection" style="margin-top: 25px;">
@@ -150,12 +150,8 @@
         </div>
     </div>
     <script>
-        // --- TEAM DATA AND LOCATION EXTRACTION ---
+        // --- TEAM DATA ---
         let wnbaTeamData = {};
-        let teamMascotToLocation = {}; // e.g. "Lynx" => "Minnesota"
-        let teamNameToLocation = {}; // e.g. "Minnesota Lynx" => "Minnesota"
-        let mascotToFullName = {}; // e.g. "lynx" => "Minnesota Lynx"
-        let locationSet = new Set();
         let leagueAverages = {};
         let dataLoaded = false;
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS652UqISW_M19VIeGamAl190YuSBpHUql9orzm7DmJW8FFA_7d7RZ-smWIQY4f3TzFA5qqygv750pI/pub?output=csv";
@@ -187,42 +183,7 @@
             return fullName.split(" ")[0];
         }
 
-        function getLocationFromInput(teamName) {
-    if (!teamName) return '';
-    const lower = teamName.trim().toLowerCase();
-
-    // Check for location match
-    for (let loc of LOCATIONS) {
-        if (loc.toLowerCase() === lower) return loc;
-    }
-
-    // Check if it's a full team name (e.g., "Dallas Wings")
-    if (teamNameToLocation[lower]) {
-        return teamNameToLocation[lower];
-    }
-
-    // Check if it's a mascot only (e.g., "Wings")
-    if (teamMascotToLocation[lower]) {
-        return teamMascotToLocation[lower];
-    }
-
-    // Try partial match: ends with mascot (e.g., "Minnesota Lynx")
-    for (let fullName in teamNameToLocation) {
-        if (fullName.endsWith(' ' + lower)) return teamNameToLocation[fullName];
-    }
-
-    // Try "Location Mascot" input (e.g., "Dallas Wings")
-    const words = teamName.split(" ");
-    if (words.length > 1 && LOCATIONS.includes(words.slice(0, -1).join(" "))) {
-        return words.slice(0, -1).join(" ");
-    }
-
-    // Fallback
-    return teamName;
-}
-
-
-        // --- CSV parsing and mapping ---
+        // --- CSV parsing ---
         function parseCSV(text) {
             const lines = text.trim().split('\n');
             const headers = lines[0].split(',').map(h => h.trim());
@@ -234,7 +195,7 @@
                     let threePPercent = parseFloat(threeP) || 0;
                     if (threePPercent > 1) threePPercent = threePPercent / 100;
                     const location = getLocationFromFullName(fullName);
-                    data[team] = {
+                    data[fullName.toLowerCase()] = {
                         fullName: fullName,
                         location: location,
                         PPG: parseFloat(PPG) || 0,
@@ -242,19 +203,13 @@
                         "Ast/TO": parseFloat(astTO) || 0,
                         "Reb/G": parseFloat(rebG) || 0
                     };
-                    // Mascot and full name mapping
-                   const mascot = fullName.split(" ").slice(-1)[0];
-teamMascotToLocation[mascot.toLowerCase()] = location;
-teamNameToLocation[fullName.toLowerCase()] = location;
-                    mascotToFullName[mascot.toLowerCase()] = fullName;
-                    locationSet.add(location);
+                    data[location.toLowerCase()] = data[fullName.toLowerCase()];
                 }
             }
             return data;
         }
 
         // --- Textarea parsing ---
-        // Improved parsing for "Team v. Team" formats, including vs, v, vs. (case-insensitive, any spacing)
         function parseGamesFromText(text) {
             const lines = text.trim().split('\n');
             const teams = [];
@@ -322,7 +277,7 @@ teamNameToLocation[fullName.toLowerCase()] = location;
                 const csvText = await fetchCSVData(csvUrl);
                 wnbaTeamData = parseCSV(csvText);
                 leagueAverages = calculateLeagueAverages();
-                const teamCount = Object.keys(wnbaTeamData).length;
+                const teamCount = Object.keys(wnbaTeamData).length / 2; // Each team indexed by location and full name
                 if (teamCount > 0) {
                     dataStatus.textContent = `✓ Loaded data for ${teamCount} WNBA teams`;
                     dataStatus.style.backgroundColor = "#d4edda";
@@ -338,29 +293,21 @@ teamNameToLocation[fullName.toLowerCase()] = location;
             }
         }
 
-        // --- Team finding by location/mascot/fullname ---
-        function findTeamByLocation(input) {
+        // --- Team finding by location or full name only ---
+        function findTeam(input) {
             if (!input || !dataLoaded) return null;
-            const searchTerm = getLocationFromInput(input);
-            for (const team of Object.values(wnbaTeamData)) {
-    if (team.location === searchTerm || team.fullName.toLowerCase() === searchTerm.toLowerCase()) {
-        return { key: team.location, data: team };
-    }
-}
-
-            return null;
+            const searchTerm = input.trim().toLowerCase();
+            return wnbaTeamData[searchTerm] || null;
         }
 
-        // --- Team stats display (show both location & mascot) ---
-        function displayTeamStats(teamKey, teamData) {
-            const fullTeamName = teamData.fullName; // e.g., "Minnesota Lynx"
+        // --- Team stats display ---
+        function displayTeamStats(teamData) {
+            const fullTeamName = teamData.fullName;
             const location = teamData.location;
-            const mascot = fullTeamName.split(" ").slice(-1)[0];
-            const displayName = `<span style="color:var(--primary);">${location}</span> <span style="color:#fff;">${mascot}</span>`;
             const teamStatsDiv = document.createElement('div');
             teamStatsDiv.className = 'team-stats';
             teamStatsDiv.innerHTML = `
-                <h2 class="team-location">${displayName}</h2>
+                <h2 class="team-location">${fullTeamName}</h2>
                 <div class="stat-item">
                     <span class="stat-label">Points Per Game:</span>
                     <span class="stat-value ${getRankingClass(teamData.PPG, 'PPG')}">${teamData.PPG.toFixed(1)}</span>
@@ -381,18 +328,17 @@ teamNameToLocation[fullName.toLowerCase()] = location;
             return teamStatsDiv;
         }
 
-        // --- Comparison summary (location & mascot) ---
-        function findBestWorstTeams(displayedTeams) {
+        // --- Comparison summary ---
+        function findBestTeams(displayedTeams) {
             if (displayedTeams.length === 0) return null;
             const stats = ['PPG', '3P%', 'Ast/TO', 'Reb/G'];
             const comparison = {};
             stats.forEach(stat => {
                 let best = { team: null, value: -Infinity, teamData: null };
-                displayedTeams.forEach(teamInfo => {
-                    const teamData = teamInfo.data;
+                displayedTeams.forEach(teamData => {
                     const value = teamData[stat];
                     if (value > best.value) {
-                        best = { team: teamData.location, value: value, teamData: teamData };
+                        best = { team: teamData.fullName, value: value, teamData: teamData };
                     }
                 });
                 comparison[stat] = { best };
@@ -414,14 +360,10 @@ teamNameToLocation[fullName.toLowerCase()] = location;
                     if (stat === 'Ast/TO') return value.toFixed(2);
                     return value.toFixed(1);
                 };
-                // Use both location & mascot
-                const bestTeamData = data.best.teamData;
-                const mascot = bestTeamData ? bestTeamData.fullName.split(" ").slice(-1)[0] : data.best.team;
-                const bestDisplayName = bestTeamData ? `${bestTeamData.location} ${mascot}` : data.best.team;
                 summaryHTML += `
                     <div class="stat-item">
                         <span class="stat-label">Best ${statLabels[stat]}:</span>
-                        <span class="stat-value good-rank">${bestDisplayName} (${formatValue(stat, data.best.value)})</span>
+                        <span class="stat-value good-rank">${data.best.team} (${formatValue(stat, data.best.value)})</span>
                     </div>
                 `;
             });
@@ -446,7 +388,7 @@ teamNameToLocation[fullName.toLowerCase()] = location;
             }
             const teamNames = parseGamesFromText(gamesText);
             if (teamNames.length === 0) {
-                errorMessage.textContent = 'No valid games found. Please check the format: "Storm v. Dream", "Minnesota v. Dallas", etc.';
+                errorMessage.textContent = 'No valid games found. Please check the format: "Minnesota v. Dallas", etc.';
                 return;
             }
             loadingIndicator.style.display = 'block';
@@ -454,12 +396,12 @@ teamNameToLocation[fullName.toLowerCase()] = location;
                 let foundTeams = [];
                 let notFoundTeams = [];
                 teamNames.forEach(teamSearch => {
-                    const teamResult = findTeamByLocation(teamSearch);
-                    if (teamResult) {
-                        if (!foundTeams.some(t => t.key === teamResult.key)) {
-                            const teamStatsDiv = displayTeamStats(teamResult.key, teamResult.data);
+                    const teamData = findTeam(teamSearch);
+                    if (teamData) {
+                        if (!foundTeams.includes(teamData)) {
+                            const teamStatsDiv = displayTeamStats(teamData);
                             statsContainer.appendChild(teamStatsDiv);
-                            foundTeams.push(teamResult);
+                            foundTeams.push(teamData);
                         }
                     } else {
                         notFoundTeams.push(teamSearch);
@@ -469,7 +411,7 @@ teamNameToLocation[fullName.toLowerCase()] = location;
                     errorMessage.textContent = `Teams not found: ${notFoundTeams.join(', ')}`;
                 }
                 if (foundTeams.length > 1) {
-                    const comparison = findBestWorstTeams(foundTeams);
+                    const comparison = findBestTeams(foundTeams);
                     displayComparisonSummary(comparison);
                 }
                 loadingIndicator.style.display = 'none';
@@ -485,7 +427,7 @@ teamNameToLocation[fullName.toLowerCase()] = location;
             if ((e.key === 'Enter' && e.ctrlKey) && dataLoaded) fetchStats();
         });
 
-        // --- Schedule loading (location or mascot) ---
+        // --- Schedule loading ---
         function setDefaultScheduleDate() {
             const now = new Date();
             const yyyy = now.getFullYear();
@@ -513,7 +455,6 @@ teamNameToLocation[fullName.toLowerCase()] = location;
                 const csvText = await fetchCSVData(scheduleCsvUrl);
                 const lines = csvText.trim().split('\n');
                 const headers = lines[0].split(',').map(h => h.trim());
-                // --- Robust header normalization below ---
                 function normalize(str) {
                     return str.trim().replace(/\s+/g, ' ').toLowerCase();
                 }
@@ -531,7 +472,7 @@ teamNameToLocation[fullName.toLowerCase()] = location;
                     else row = lines[i].split(',').map(cell => cell.trim());
                     const csvDate = parseCsvDate(row[dateIdx]);
                     if (csvDate === selectedDate) {
-                        // Accept mascots or locations
+                        // Accept locations or full names
                         const away = row[visitorIdx];
                         const home = row[homeIdx];
                         gamesForDate.push(`${away} v. ${home}`);
