@@ -17,337 +17,90 @@
             --hover-primary: #5a32a3;
             --highlight-bg: #2a2a2a;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: sans-serif;
-        }
-
-        body {
-            background-color: var(--background);
-            color: var(--text);
-            padding: 20px;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .description {
-            margin-bottom: 20px;
-            color: #999;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        body { background-color: var(--background); color: var(--text); padding: 20px; text-align: center; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--primary); margin-bottom: 10px; }
         .input-section {
-            background-color: var(--card);
-            padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
-            border: 2px solid #333;
+            background-color: var(--card); padding: 20px; border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); margin-bottom: 30px; border: 2px solid #333;
         }
-
-        .game-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .bulk-input-section {
-            margin-bottom: 20px;
-        }
-
-        .bulk-input-label {
-            color: var(--primary);
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: block;
-        }
-
+        .bulk-input-section { margin-bottom: 20px; }
+        .bulk-input-label { color: var(--primary); font-weight: bold; margin-bottom: 10px; display: block; }
         .games-textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 15px;
-            border: 2px solid var(--input-border);
-            background-color: var(--input-bg);
-            color: var(--text);
-            resize: vertical;
-            transition: border-color 0.3s;
+            width: 100%; min-height: 120px; padding: 15px; font-size: 16px; border-radius: 15px;
+            border: 2px solid var(--input-border); background-color: var(--input-bg); color: var(--text);
+            resize: vertical; transition: border-color 0.3s;
         }
-
-        .games-textarea:focus {
-            border-color: var(--focus-color);
-            outline: none;
-        }
-
-        .games-textarea::placeholder {
-            color: #888;
-        }
-
-        .format-example {
-            font-size: 14px;
-            color: #888;
-            margin-top: 5px;
-            font-style: italic;
-        }
-
-        .game-input {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .vs-label {
-            font-weight: bold;
-            color: var(--primary);
-        }
-
+        .games-textarea:focus { border-color: var(--focus-color); outline: none; }
+        .games-textarea::placeholder { color: #888; }
+        .format-example { font-size: 14px; color: #888; margin-top: 5px; font-style: italic; }
         input, select {
-            flex: 1;
-            margin: 5px;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 25px;
-            border: 2px solid var(--input-border);
-            background-color: var(--input-bg);
-            color: var(--text);
+            flex: 1; margin: 5px; padding: 15px; font-size: 16px; border-radius: 25px;
+            border: 2px solid var(--input-border); background-color: var(--input-bg); color: var(--text);
             transition: border-color 0.3s;
         }
-
-        input:focus, select:focus {
-            border-color: var(--focus-color);
-            outline: none;
-        }
-
+        input:focus, select:focus { border-color: var(--focus-color); outline: none; }
         .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; justify-content: center;
         }
-
         button {
-            margin: 5px;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 25px;
-            border: none;
-            cursor: pointer;
-            background-color: var(--primary);
-            color: white;
-            transition: background-color 0.3s;
+            margin: 5px; padding: 15px; font-size: 16px; border-radius: 25px; border: none;
+            cursor: pointer; background-color: var(--primary); color: white; transition: background-color 0.3s;
         }
-
-        button:hover {
-            background-color: var(--hover-primary);
-        }
-
-        button:focus {
-            border-color: var(--focus-color);
-            outline: none;
-        }
-
-        button:disabled {
-            background-color: #666;
-            cursor: not-allowed;
-        }
-
-        #addGameButton {
-            background-color: #4CAF50;
-        }
-
-        #addGameButton:hover {
-            background-color: #45a049;
-        }
-
-        #clearButton {
-            background-color: var(--secondary);
-            margin-left: 10px;
-        }
-
-        #clearButton:hover {
-            background-color: #cc0000;
-        }
-
-        #scheduleButton {
-            background-color: #17a2b8;
-        }
-
-        #scheduleButton:hover {
-            background-color: #138496;
-        }
-
-        #loadScheduleButton {
-            background-color: #17a2b8;
-        }
-
-        #loadScheduleButton:hover {
-            background-color: #138496;
-        }
-
-        #modeToggle {
-            margin-top: 20px;
-        }
-
-        .stats-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
+        button:hover { background-color: var(--hover-primary); }
+        button:focus { border-color: var(--focus-color); outline: none; }
+        button:disabled { background-color: #666; cursor: not-allowed; }
+        #addGameButton { background-color: #4CAF50; }
+        #addGameButton:hover { background-color: #45a049; }
+        #clearButton { background-color: var(--secondary); margin-left: 10px; }
+        #clearButton:hover { background-color: #cc0000; }
+        #scheduleButton, #loadScheduleButton { background-color: #17a2b8; }
+        #scheduleButton:hover, #loadScheduleButton:hover { background-color: #138496; }
+        #modeToggle { margin-top: 20px; }
+        .stats-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .team-stats {
-            background-color: var(--card);
-            padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            border: 2px solid #333;
+            background-color: var(--card); padding: 20px; border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); border: 2px solid #333;
         }
-
-        .team-name {
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-size: 24px;
+        .team-location {
+            color: var(--primary); margin-bottom: 15px; font-size: 24px;
         }
-
-        .stat-item {
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .stat-label {
-            font-weight: bold;
-            color: #aaa;
-        }
-
-        .stat-value {
-            font-weight: bold;
-        }
-
+        .stat-item { margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .stat-label { font-weight: bold; color: #aaa; }
+        .stat-value { font-weight: bold; }
         .summary-section {
-            background-color: var(--card);
-            padding: 20px;
-            border-radius: 25px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            border: 2px solid #333;
-            margin-top: 30px;
-            margin-bottom: 20px;
+            background-color: var(--card); padding: 20px; border-radius: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); border: 2px solid #333;
+            margin-top: 30px; margin-bottom: 20px;
         }
-
         .summary-title {
-            color: var(--primary);
-            margin-bottom: 15px;
-            font-size: 24px;
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
+            color: var(--primary); margin-bottom: 15px; font-size: 24px;
+            border-bottom: 2px solid var(--primary); padding-bottom: 10px;
         }
-
-        .highlight {
-            background-color: var(--highlight-bg);
-            padding: 3px;
-            border-radius: 3px;
-        }
-
-        .loading {
-            text-align: center;
-            margin: 20px 0;
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        .error {
-            color: var(--secondary);
-            text-align: center;
-            margin: 10px 0;
-        }
-
-        /* Rankings */
-        .good-rank {
-            color: #4CAF50;
-        }
-
-        .average-rank {
-            color: #ffc107;
-        }
-
-        .bad-rank {
-            color: #dc3545;
-        }
-
+        .highlight { background-color: var(--highlight-bg); padding: 3px; border-radius: 3px; }
+        .loading { text-align: center; margin: 20px 0; color: var(--primary); font-weight: bold; }
+        .error { color: var(--secondary); text-align: center; margin: 10px 0; }
+        .good-rank { color: #4CAF50; }
+        .average-rank { color: #ffc107; }
+        .bad-rank { color: #dc3545; }
         #red { color: #dc3545; }
         #orange { color: #ffc107; }
         #green { color: #28a745; }
-
         .explDiv {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: var(--highlight-bg);
-            border-radius: 25px;
-            border: 1px solid #444;
+            display: none; margin-top: 10px; padding: 10px; background-color: var(--highlight-bg);
+            border-radius: 25px; border: 1px solid #444;
         }
-
         .data-status {
-            background-color: #1a2332;
-            padding: 10px;
-            border-radius: 25px;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #6bb6ff;
-            border: 1px solid #2a3a4a;
+            background-color: #1a2332; padding: 10px; border-radius: 25px; margin-bottom: 15px;
+            font-size: 14px; color: #6bb6ff; border: 1px solid #2a3a4a;
         }
-
-        .custom-names {
-            display: none;
-        }
-
-        .real-odds {
-            display: none;
-        }
-
-        a {
-            color: #858bf0;
-        }
-
-        .highest-ev {
-            color: #4CAF50;
-            font-weight: bold;
-        }
-
-        /* Responsive adjustments */
+        a { color: #858bf0; }
+        .highest-ev { color: #4CAF50; font-weight: bold; }
         @media (max-width: 768px) {
-            .game-input {
-                flex-direction: column;
-            }
-            
-            .vs-label {
-                margin: 5px 0;
-            }
-            
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
+            .stats-container { grid-template-columns: 1fr; }
+            .button-group { flex-direction: column; }
         }
     </style>
 </head>
@@ -356,38 +109,30 @@
         <header>
             <h1>WNBA PSP Helper</h1>
         </header>
-
         <div class="input-section">
-            <div class="data-status" id="dataStatus">
-                Loading WNBA team data...
-            </div>
-            
+            <div class="data-status" id="dataStatus">Loading WNBA team data...</div>
             <div class="bulk-input-section">
                 <label class="bulk-input-label" for="gamesTextarea">Paste your games list:</label>
                 <textarea 
                     id="gamesTextarea" 
                     class="games-textarea" 
-                    placeholder="Los Angeles v. Seattle&#10;Indiana v. Golden State&#10;New York v. Las Vegas&#10;Connecticut v. Chicago"
+                    placeholder="Minnesota v. Dallas&#10;Indiana v. Phoenix&#10;New York v. Las Vegas&#10;Connecticut v. Chicago"
                 ></textarea>
                 <div class="format-example">
-                    Format: "Team A v. Team B" (one game per line)
+                    Format: "Location A v. Location B" (one game per line)
                 </div>
             </div>
-
-            <!-- SCHEDULE LOADER SECTION -->
             <div class="bulk-input-section" id="scheduleSection" style="margin-top: 25px;">
                 <label class="bulk-input-label" for="scheduleDate">Load Schedule by Date:</label>
                 <input type="date" id="scheduleDate" style="max-width: 200px;">
                 <button id="loadScheduleButton" style="background-color:#17a2b8;">Load Schedule</button>
             </div>
-            
             <div class="button-group">
                 <button id="fetchButton" disabled>Get Stats</button>
                 <button id="scheduleButton" onclick="window.open('wnba-schedule.html', '_blank')">Get Schedule</button>
                 <button id="clearButton">Clear All</button>
                 <button id="explButton" onclick="explain()">Stat Explanation</button>
             </div>
-            
             <div class="explDiv">
                 <h4>Stat Rankings Explanation:</h4>
                 <p><span id="green">Green:</span> Top 4 teams in the stat (best performance)</p>
@@ -395,10 +140,8 @@
                 <p><span id="red">Red:</span> Bottom 4 teams in the stat (worst performance)</p>
                 <p><em>Higher values are generally better for offensive stats, lower for defensive stats.</em></p>
             </div>
-            
             <div id="errorMessage" class="error"></div>
         </div>
-
         <div id="loadingIndicator" class="loading" style="display: none;">Loading stats...</div>
         <div id="statsContainer" class="stats-container"></div>
         <div id="summarySection" class="summary-section" style="display: none;">
@@ -406,19 +149,16 @@
             <div id="summaryContent"></div>
         </div>
     </div>
-
     <script>
-        // Global variables
+        // --- TEAM DATA AND LOCATION EXTRACTION ---
         let wnbaTeamData = {};
+        let teamMascotToLocation = {}; // e.g. "Lynx" => "Minnesota"
+        let teamNameToLocation = {}; // e.g. "Minnesota Lynx" => "Minnesota"
         let leagueAverages = {};
         let dataLoaded = false;
-
-        // CSV URL for WNBA data
         const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS652UqISW_M19VIeGamAl190YuSBpHUql9orzm7DmJW8FFA_7d7RZ-smWIQY4f3TzFA5qqygv750pI/pub?output=csv";
-        // CSV schedule URL
         const scheduleCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vROx4fkNFd-O74kZAlxX4L6cZT9Q8In931Wdwv_IkfkV_5AO2sOTrwlQlOFJZYkhu3fxB0QFygwI4_j/pub?output=csv";
-
-        // DOM elements
+        // DOM
         const gamesTextarea = document.getElementById('gamesTextarea');
         const fetchButton = document.getElementById('fetchButton');
         const clearButton = document.getElementById('clearButton');
@@ -428,44 +168,64 @@
         const summarySection = document.getElementById('summarySection');
         const summaryContent = document.getElementById('summaryContent');
         const dataStatus = document.getElementById('dataStatus');
-        // Schedule section
         const scheduleDateInput = document.getElementById('scheduleDate');
         const loadScheduleButton = document.getElementById('loadScheduleButton');
 
-        // Function to show/hide explanation
-        function explain() {
-            const explDivs = document.querySelectorAll('.explDiv');
-            explDivs.forEach(div => {
-                const computedStyle = window.getComputedStyle(div);
-                if (computedStyle.display === 'block') {
-                    div.style.display = 'none';
-                } else {
-                    div.style.display = 'block';
-                }
-            });
+        // Extract location from "Minnesota Lynx" => "Minnesota"
+        function getLocationFromFullName(fullName) {
+            // Handle multi-word locations: New York Liberty, Los Angeles Sparks, Las Vegas Aces, etc.
+            // Use a WNBA locations list for accuracy
+            const locations = [
+                "Atlanta", "Chicago", "Connecticut", "Dallas", "Indiana", "Las Vegas",
+                "Los Angeles", "Minnesota", "New York", "Phoenix", "Seattle", "Washington"
+            ];
+            for (let loc of locations) {
+                if (fullName.startsWith(loc + " ")) return loc;
+            }
+            // fallback: return first word
+            return fullName.split(" ")[0];
         }
 
-        // Function to parse games from textarea
+        // --- CSV parsing and mapping ---
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = {};
+            for (let i = 1; i < lines.length; i++) {
+                const row = lines[i].split(',').map(cell => cell.trim());
+                const [team, fullName, PPG, threeP, astTO, rebG] = row;
+                if (team && fullName) {
+                    let threePPercent = parseFloat(threeP) || 0;
+                    if (threePPercent > 1) threePPercent = threePPercent / 100;
+                    data[team] = {
+                        fullName: fullName,
+                        location: getLocationFromFullName(fullName),
+                        PPG: parseFloat(PPG) || 0,
+                        "3P%": threePPercent,
+                        "Ast/TO": parseFloat(astTO) || 0,
+                        "Reb/G": parseFloat(rebG) || 0
+                    };
+                    // For mascot and full name mapping
+                    const mascot = fullName.split(" ").slice(-1)[0];
+                    teamMascotToLocation[mascot.toLowerCase()] = getLocationFromFullName(fullName);
+                    teamNameToLocation[fullName.toLowerCase()] = getLocationFromFullName(fullName);
+                }
+            }
+            return data;
+        }
+
+        // --- Textarea parsing ---
         function parseGamesFromText(text) {
             const lines = text.trim().split('\n');
             const teams = [];
-            
             lines.forEach(line => {
                 const trimmedLine = line.trim();
                 if (!trimmedLine) return;
-                
-                // Split by various possible separators
                 let parts = [];
-                if (trimmedLine.includes(' v. ')) {
-                    parts = trimmedLine.split(' v. ');
-                } else if (trimmedLine.includes(' vs. ')) {
-                    parts = trimmedLine.split(' vs. ');
-                } else if (trimmedLine.includes(' vs ')) {
-                    parts = trimmedLine.split(' vs ');
-                } else if (trimmedLine.includes(' v ')) {
-                    parts = trimmedLine.split(' v ');
-                }
-                
+                if (trimmedLine.includes(' v. ')) parts = trimmedLine.split(' v. ');
+                else if (trimmedLine.includes(' vs. ')) parts = trimmedLine.split(' vs. ');
+                else if (trimmedLine.includes(' vs ')) parts = trimmedLine.split(' vs ');
+                else if (trimmedLine.includes(' v ')) parts = trimmedLine.split(' v ');
                 if (parts.length === 2) {
                     const team1 = parts[0].trim();
                     const team2 = parts[1].trim();
@@ -474,76 +234,30 @@
                     }
                 }
             });
-            
-            // Remove duplicates
             return [...new Set(teams)];
         }
 
-        // Function to fetch CSV data
+        // --- Fetch helpers ---
         async function fetchCSVData(url) {
             try {
                 const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const text = await response.text();
-                return text;
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.text();
             } catch (error) {
                 console.error('Error fetching CSV:', error);
                 throw error;
             }
         }
 
-        // Function to parse CSV data
-        function parseCSV(text) {
-            const lines = text.trim().split('\n');
-            const headers = lines[0].split(',').map(h => h.trim());
-            const data = {};
-            
-            for (let i = 1; i < lines.length; i++) {
-                const row = lines[i].split(',').map(cell => cell.trim());
-                const [team, fullName, PPG, threeP, astTO, rebG] = row;
-                
-                if (team && fullName) {
-                    // Parse 3P% value and ensure it's in decimal format (0.xx)
-                    let threePPercent = parseFloat(threeP) || 0;
-                    // If the value is already greater than 1, assume it's already in percentage format
-                    // and convert it back to decimal
-                    if (threePPercent > 1) {
-                        threePPercent = threePPercent / 100;
-                    }
-                    
-                    data[team] = {
-                        fullName: fullName,
-                        PPG: parseFloat(PPG) || 0,
-                        "3P%": threePPercent,
-                        "Ast/TO": parseFloat(astTO) || 0,
-                        "Reb/G": parseFloat(rebG) || 0
-                    };
-                }
-            }
-            return data;
-        }
-
-        // Function to calculate league averages
-        const calculateLeagueAverages = () => {
+        // --- League averages ---
+        function calculateLeagueAverages() {
             const teams = Object.values(wnbaTeamData);
             if (teams.length === 0) return {};
-            
-            const averages = {
-                PPG: 0,
-                "3P%": 0,
-                "Ast/TO": 0,
-                "Reb/G": 0
-            };
-            
+            const averages = { PPG: 0, "3P%": 0, "Ast/TO": 0, "Reb/G": 0 };
             teams.forEach(team => {
-                averages.PPG += team.PPG;
-                averages["3P%"] += team["3P%"];
-                averages["Ast/TO"] += team["Ast/TO"];
-                averages["Reb/G"] += team["Reb/G"];
+                averages.PPG += team.PPG; averages["3P%"] += team["3P%"];
+                averages["Ast/TO"] += team["Ast/TO"]; averages["Reb/G"] += team["Reb/G"];
             });
-            
             const numTeams = teams.length;
             return {
                 PPG: averages.PPG / numTeams,
@@ -551,29 +265,26 @@
                 "Ast/TO": averages["Ast/TO"] / numTeams,
                 "Reb/G": averages["Reb/G"] / numTeams
             };
-        };
+        }
 
-        // Function to get ranking class based on team performance
-        const getRankingClass = (value, statName) => {
+        // --- Rankings ---
+        function getRankingClass(value, statName) {
             const teams = Object.values(wnbaTeamData);
             const values = teams.map(team => team[statName]).sort((a, b) => b - a);
-            
             const topThird = Math.ceil(values.length / 3);
             const bottomThird = Math.floor(values.length / 3);
-            
             if (value >= values[topThird - 1]) return "good-rank";
             if (value <= values[values.length - bottomThird]) return "bad-rank";
             return "average-rank";
-        };
+        }
 
-        // Function to load WNBA data
+        // --- Data loading ---
         async function loadWNBAData() {
             try {
                 dataStatus.textContent = "Loading WNBA team data...";
                 const csvText = await fetchCSVData(csvUrl);
                 wnbaTeamData = parseCSV(csvText);
                 leagueAverages = calculateLeagueAverages();
-                
                 const teamCount = Object.keys(wnbaTeamData).length;
                 if (teamCount > 0) {
                     dataStatus.textContent = `✓ Loaded data for ${teamCount} WNBA teams`;
@@ -581,11 +292,8 @@
                     dataStatus.style.color = "#155724";
                     dataLoaded = true;
                     fetchButton.disabled = false;
-                } else {
-                    throw new Error("No team data found");
-                }
+                } else throw new Error("No team data found");
             } catch (error) {
-                console.error('Error loading WNBA data:', error);
                 dataStatus.textContent = "⚠ Error loading team data. Please refresh the page.";
                 dataStatus.style.backgroundColor = "#f8d7da";
                 dataStatus.style.color = "#721c24";
@@ -593,115 +301,98 @@
             }
         }
 
-        // Function to find a team by partial name
-        const findTeamByPartialName = (partialName) => {
-            if (!partialName || !dataLoaded) return null;
-            
-            const searchTerm = partialName.toLowerCase().trim();
-            
-            // First try direct key match
-            if (wnbaTeamData[partialName]) {
-                return {
-                    key: partialName,
-                    data: wnbaTeamData[partialName]
-                };
-            }
-            
-            // Then try partial match
-            for (const [key, data] of Object.entries(wnbaTeamData)) {
-                if (key.toLowerCase().includes(searchTerm) || 
-                    data.fullName.toLowerCase().includes(searchTerm)) {
-                    return {
-                        key: key,
-                        data: data
-                    };
+        // --- Team finding by location or mascot ---
+        function findTeamByLocationOrMascot(input) {
+            if (!input || !dataLoaded) return null;
+            const searchTerm = input.toLowerCase().trim();
+            // Exact location match
+            for (const team of Object.values(wnbaTeamData)) {
+                if (team.location.toLowerCase() === searchTerm) {
+                    return { key: team.location, data: team };
                 }
             }
-            
+            // Mascot match
+            if (teamMascotToLocation[searchTerm]) {
+                const loc = teamMascotToLocation[searchTerm];
+                for (const team of Object.values(wnbaTeamData)) {
+                    if (team.location === loc) return { key: loc, data: team };
+                }
+            }
+            // Full name match
+            if (teamNameToLocation[searchTerm]) {
+                const loc = teamNameToLocation[searchTerm];
+                for (const team of Object.values(wnbaTeamData)) {
+                    if (team.location === loc) return { key: loc, data: team };
+                }
+            }
+            // Try partial match in full name
+            for (const team of Object.values(wnbaTeamData)) {
+                if (team.fullName.toLowerCase().includes(searchTerm) || team.location.toLowerCase().includes(searchTerm)) {
+                    return { key: team.location, data: team };
+                }
+            }
             return null;
-        };
+        }
 
-        // Function to display team stats
-        const displayTeamStats = (teamKey, teamData) => {
+        // --- Team stats display (location only) ---
+        function displayTeamStats(teamKey, teamData) {
             const teamStatsDiv = document.createElement('div');
             teamStatsDiv.className = 'team-stats';
-            
             teamStatsDiv.innerHTML = `
-                <h2 class="team-name">${teamData.fullName}</h2>
-                
+                <h2 class="team-location">${teamData.location}</h2>
                 <div class="stat-item">
                     <span class="stat-label">Points Per Game:</span>
                     <span class="stat-value ${getRankingClass(teamData.PPG, 'PPG')}">${teamData.PPG.toFixed(1)}</span>
                 </div>
-                
                 <div class="stat-item">
                     <span class="stat-label">3-Point %:</span>
                     <span class="stat-value ${getRankingClass(teamData["3P%"], '3P%')}">${(teamData["3P%"] * 100).toFixed(1)}%</span>
                 </div>
-                
                 <div class="stat-item">
                     <span class="stat-label">Assist/Turnover Ratio:</span>
                     <span class="stat-value ${getRankingClass(teamData["Ast/TO"], 'Ast/TO')}">${teamData["Ast/TO"].toFixed(2)}</span>
                 </div>
-                
                 <div class="stat-item">
                     <span class="stat-label">Rebounds Per Game:</span>
                     <span class="stat-value ${getRankingClass(teamData["Reb/G"], 'Reb/G')}">${teamData["Reb/G"].toFixed(1)}</span>
                 </div>
             `;
-            
             return teamStatsDiv;
-        };
+        }
 
-        // Function to find best and worst teams for each stat
-        const findBestWorstTeams = (displayedTeams) => {
+        // --- Comparison summary (locations only) ---
+        function findBestWorstTeams(displayedTeams) {
             if (displayedTeams.length === 0) return null;
-            
             const stats = ['PPG', '3P%', 'Ast/TO', 'Reb/G'];
             const comparison = {};
-            
             stats.forEach(stat => {
                 let best = { team: null, value: -Infinity };
-                let worst = { team: null, value: Infinity };
-                
                 displayedTeams.forEach(teamInfo => {
                     const teamData = teamInfo.data;
                     const value = teamData[stat];
-                    
                     if (value > best.value) {
-                        best = { team: teamData.fullName, value: value };
-                    }
-                    if (value < worst.value) {
-                        worst = { team: teamData.fullName, value: value };
+                        best = { team: teamData.location, value: value };
                     }
                 });
-                
-                comparison[stat] = { best, worst };
+                comparison[stat] = { best };
             });
-            
             return comparison;
-        };
-
-        // Function to display comparison summary
-        const displayComparisonSummary = (comparison) => {
+        }
+        function displayComparisonSummary(comparison) {
             if (!comparison) return;
-            
             let summaryHTML = '';
-            
             const statLabels = {
                 'PPG': 'Points Per Game',
                 '3P%': '3-Point Percentage',
                 'Ast/TO': 'Assist/Turnover Ratio',
                 'Reb/G': 'Rebounds Per Game'
             };
-            
             Object.entries(comparison).forEach(([stat, data]) => {
                 const formatValue = (stat, value) => {
                     if (stat === '3P%') return `${(value * 100).toFixed(1)}%`;
                     if (stat === 'Ast/TO') return value.toFixed(2);
                     return value.toFixed(1);
                 };
-                
                 summaryHTML += `
                     <div class="stat-item">
                         <span class="stat-label">Best ${statLabels[stat]}:</span>
@@ -709,53 +400,38 @@
                     </div>
                 `;
             });
-            
             summaryHTML += `<p style="margin-top: 15px; font-style: italic;">Comparison based on selected teams only.</p>`;
-            
             summaryContent.innerHTML = summaryHTML;
             summarySection.style.display = 'block';
-        };
+        }
 
-        // Function to fetch and display stats
-        const fetchStats = () => {
+        // --- Main analysis ---
+        function fetchStats() {
             if (!dataLoaded) {
                 errorMessage.textContent = 'Team data is still loading. Please wait.';
                 return;
             }
-            
-            // Clear previous results and errors
             statsContainer.innerHTML = '';
             errorMessage.textContent = '';
             summarySection.style.display = 'none';
-            
-            // Get games text
             const gamesText = gamesTextarea.value.trim();
             if (!gamesText) {
                 errorMessage.textContent = 'Please paste your games list in the text area.';
                 return;
             }
-            
-            // Parse teams from the games text
             const teamNames = parseGamesFromText(gamesText);
             if (teamNames.length === 0) {
-                errorMessage.textContent = 'No valid games found. Please check the format: "Team A v. Team B"';
+                errorMessage.textContent = 'No valid games found. Please check the format: "Location A v. Location B"';
                 return;
             }
-            
-            // Show loading indicator
             loadingIndicator.style.display = 'block';
-            
-            // Process team inputs
             setTimeout(() => {
                 let foundTeams = [];
                 let notFoundTeams = [];
-                
                 teamNames.forEach(teamSearch => {
-                    const teamResult = findTeamByPartialName(teamSearch);
+                    const teamResult = findTeamByLocationOrMascot(teamSearch);
                     if (teamResult) {
-                        // Check if we already have this team
-                        const alreadyExists = foundTeams.some(t => t.key === teamResult.key);
-                        if (!alreadyExists) {
+                        if (!foundTeams.some(t => t.key === teamResult.key)) {
                             const teamStatsDiv = displayTeamStats(teamResult.key, teamResult.data);
                             statsContainer.appendChild(teamStatsDiv);
                             foundTeams.push(teamResult);
@@ -764,41 +440,27 @@
                         notFoundTeams.push(teamSearch);
                     }
                 });
-                
-                // Display error for teams not found
                 if (notFoundTeams.length > 0) {
                     errorMessage.textContent = `Teams not found: ${notFoundTeams.join(', ')}`;
                 }
-                
-                // Display comparison if we have multiple teams
                 if (foundTeams.length > 1) {
                     const comparison = findBestWorstTeams(foundTeams);
                     displayComparisonSummary(comparison);
                 }
-                
-                // Hide loading indicator
                 loadingIndicator.style.display = 'none';
             }, 300);
-        };
-
-        // Function to clear the form and results
-        const clearForm = () => {
+        }
+        function clearForm() {
             gamesTextarea.value = '';
             statsContainer.innerHTML = '';
             errorMessage.textContent = '';
             summarySection.style.display = 'none';
-        };
-
-        // Allow pressing Enter to submit (Ctrl+Enter for textarea)
+        }
         gamesTextarea.addEventListener('keydown', (e) => {
-            if ((e.key === 'Enter' && e.ctrlKey) && dataLoaded) {
-                fetchStats();
-            }
+            if ((e.key === 'Enter' && e.ctrlKey) && dataLoaded) fetchStats();
         });
 
-        // Schedule loader feature
-
-        // Set default date to today (or to the first available game if today is not in season)
+        // --- Schedule loading (location only) ---
         function setDefaultScheduleDate() {
             const now = new Date();
             const yyyy = now.getFullYear();
@@ -806,8 +468,6 @@
             const dd = String(now.getDate()).padStart(2, '0');
             scheduleDateInput.value = `${yyyy}-${mm}-${dd}`;
         }
-
-        // Parse date from CSV ("Fri, May 16, 2025") to yyyy-mm-dd
         function parseCsvDate(csvDateStr) {
             const d = new Date(csvDateStr.replace(/^\w+, /, ''));
             if (isNaN(d)) return null;
@@ -816,8 +476,6 @@
             const dd = String(d.getDate()).padStart(2, '0');
             return `${yyyy}-${mm}-${dd}`;
         }
-
-        // Load and parse schedule, then insert games for date
         async function loadScheduleForDate() {
             const selectedDate = scheduleDateInput.value;
             if (!selectedDate) {
@@ -826,7 +484,6 @@
             }
             errorMessage.textContent = "";
             loadingIndicator.style.display = 'block';
-
             try {
                 const csvText = await fetchCSVData(scheduleCsvUrl);
                 const lines = csvText.trim().split('\n');
@@ -834,36 +491,34 @@
                 const dateIdx = headers.indexOf("Date");
                 const visitorIdx = headers.indexOf("Visitor/Neutral");
                 const homeIdx = headers.indexOf("Home/Neutral");
-
-                if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1) {
+                if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1)
                     throw new Error("Unexpected CSV format for schedule.");
-                }
-
-                // Gather games for that date
                 const gamesForDate = [];
                 for (let i = 1; i < lines.length; i++) {
-                    // Handle possible quoted fields with commas
                     let row = [];
                     let match = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                    if (match) {
-                        row = match.map(s => s.replace(/^"|"$/g, '').trim());
-                    } else {
-                        row = lines[i].split(',').map(cell => cell.trim());
-                    }
+                    if (match) row = match.map(s => s.replace(/^"|"$/g, '').trim());
+                    else row = lines[i].split(',').map(cell => cell.trim());
                     const csvDate = parseCsvDate(row[dateIdx]);
                     if (csvDate === selectedDate) {
-                        const away = row[visitorIdx];
-                        const home = row[homeIdx];
-                        if (away && home) {
-                            gamesForDate.push(`${away} v. ${home}`);
-                        }
+                        // Show location only
+                        const awayTeamName = row[visitorIdx];
+                        const homeTeamName = row[homeIdx];
+                        let awayLoc = awayTeamName;
+                        let homeLoc = homeTeamName;
+                        // Try mapping to location
+                        if (teamNameToLocation[awayTeamName.toLowerCase()]) awayLoc = teamNameToLocation[awayTeamName.toLowerCase()];
+                        else if (teamMascotToLocation[awayTeamName.toLowerCase()]) awayLoc = teamMascotToLocation[awayTeamName.toLowerCase()];
+                        else if (awayTeamName.split(" ").length > 1) awayLoc = awayTeamName.split(" ").slice(0, -1).join(" ");
+                        if (teamNameToLocation[homeTeamName.toLowerCase()]) homeLoc = teamNameToLocation[homeTeamName.toLowerCase()];
+                        else if (teamMascotToLocation[homeTeamName.toLowerCase()]) homeLoc = teamMascotToLocation[homeTeamName.toLowerCase()];
+                        else if (homeTeamName.split(" ").length > 1) homeLoc = homeTeamName.split(" ").slice(0, -1).join(" ");
+                        gamesForDate.push(`${awayLoc} v. ${homeLoc}`);
                     }
                 }
-
                 if (gamesForDate.length === 0) {
                     errorMessage.textContent = "No games scheduled for that date.";
                 } else {
-                    // Insert into games textarea, replacing current
                     gamesTextarea.value = gamesForDate.join('\n');
                 }
             } catch (err) {
@@ -873,13 +528,21 @@
             }
         }
 
-        // Hook up events
+        // --- EXPLAIN ---
+        function explain() {
+            const explDivs = document.querySelectorAll('.explDiv');
+            explDivs.forEach(div => {
+                const computedStyle = window.getComputedStyle(div);
+                if (computedStyle.display === 'block') div.style.display = 'none';
+                else div.style.display = 'block';
+            });
+        }
+
+        // --- EVENT HOOKS ---
         fetchButton.addEventListener('click', fetchStats);
         clearButton.addEventListener('click', clearForm);
         if (loadScheduleButton) loadScheduleButton.addEventListener('click', loadScheduleForDate);
         if (scheduleDateInput) setDefaultScheduleDate();
-
-        // Load data when page loads
         window.addEventListener('load', loadWNBAData);
     </script>
 </body>
