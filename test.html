@@ -273,7 +273,7 @@
         // --- Data loading ---
         async function loadWNBAData() {
             try {
-                dataStatus.textContent = "Loading WNBA team data...";
+               
                 const csvText = await fetchCSVData(csvUrl);
                 wnbaTeamData = parseCSV(csvText);
                 leagueAverages = calculateLeagueAverages();
