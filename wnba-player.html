@@ -24,7 +24,7 @@
     .description { color: #aaa; margin-bottom: 20px; text-align: center; }
     .input-group { margin-bottom: 20px; }
     label { font-weight: 600; color: #b37bfa; display: block; margin-bottom: 7px;}
-    textarea, select, input[type="number"] {
+    textarea, select, input[type="number"], input[type="date"] {
       width: 100%; font-size: 1rem;
       border-radius: 14px; border: 2px solid #333;
       background: #1b1b2f; color: #e0e0e0;
@@ -32,7 +32,7 @@
       outline: none;
       transition: border 0.2s;
     }
-    textarea:focus, select:focus, input[type="number"]:focus { border: 2px solid #b37bfa; }
+    textarea:focus, select:focus, input[type="number"]:focus, input[type="date"]:focus { border: 2px solid #b37bfa; }
     .prop-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap;}
     .prop-controls label { margin: 0;}
     button {
@@ -55,6 +55,10 @@
     .player-list li { margin-bottom: 4px; }
     .no-player { color: #ff7474; }
     .error { margin: 12px 0 0 0; color: #ff7474; text-align: center; font-weight: bold; }
+    .loading { text-align: center; color: #b37bfa; margin-bottom: 8px;}
+    .bulk-input-label { color: #b37bfa; font-weight: bold; margin-bottom: 5px; display: block; }
+    .format-example { font-size: 14px; color: #888; margin-top: 5px; font-style: italic; }
+    .schedule-section { margin-bottom: 15px; }
     @media (max-width:600px){
       .container { padding: 8px 3px;}
       .prop-controls { flex-direction: column; align-items: stretch;}
@@ -70,8 +74,19 @@
     </div>
 
     <div class="input-group">
-      <label for="schedule">Schedule (one game per line, e.g. <i>Las Vegas v. New York</i>):</label>
+      <label class="bulk-input-label" for="schedule">Schedule (one game per line, e.g. <i>Las Vegas v. New York</i>):</label>
       <textarea id="schedule" rows="5" placeholder="Las Vegas v. New York&#10;Connecticut v. Dallas"></textarea>
+      <div class="format-example">
+        Format: "Location v. Location" or "Full Team Name v. Full Team Name" (e.g., "Minnesota v. Dallas", "Minnesota Lynx v. Dallas Wings")
+      </div>
+    </div>
+
+    <!-- SCHEDULE DATE LOADING SECTION -->
+    <div class="input-group schedule-section">
+      <label class="bulk-input-label" for="scheduleDate">Load Schedule by Date:</label>
+      <input type="date" id="scheduleDate" style="max-width: 200px;">
+      <button id="loadScheduleButton" style="background-color:#17a2b8;">Load Schedule</button>
+      <div id="loadingIndicator" class="loading" style="display:none;">Loading schedule...</div>
     </div>
 
     <div class="input-group prop-controls">
@@ -91,8 +106,9 @@
   </div>
 
   <script>
-    // CSV source
+    // CSV sources
     const PLAYER_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_-6UY7sL7jnnuMH1kmH3AqI5w5GcWtfYstY1PaQkpQP03i0T-Ogl7jBQv8OatEeUXduxQ3ThsYay7/pub?output=csv";
+    const SCHEDULE_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vROx4fkNFd-O74kZAlxX4L6cZT9Q8In931Wdwv_IkfkV_5AO2sOTrwlQlOFJZYkhu3fxB0QFygwI4_j/pub?output=csv";
 
     let wnbaPlayersByTeam = {}; // { "Las Vegas": [playerObj, ...], ... }
     let playerCSVLoaded = false;
@@ -197,8 +213,81 @@
       });
     }
 
+    // -------- SCHEDULE CSV (DATE) LOGIC --------
+    function setDefaultScheduleDate() {
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      document.getElementById('scheduleDate').value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function parseCsvDate(csvDateStr) {
+      // Accepts "Wed, Jul 3, 2024" or "Jul 3, 2024"
+      const d = new Date(csvDateStr.replace(/^\w+, /, ''));
+      if (isNaN(d)) return null;
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
+    async function loadScheduleForDate() {
+      const selectedDate = document.getElementById('scheduleDate').value;
+      const errorDiv = document.getElementById('error');
+      const loadingIndicator = document.getElementById('loadingIndicator');
+      if (!selectedDate) {
+        errorDiv.textContent = "Please select a date.";
+        return;
+      }
+      errorDiv.textContent = "";
+      loadingIndicator.style.display = "block";
+      try {
+        const resp = await fetch(SCHEDULE_CSV_URL);
+        if (!resp.ok) throw new Error("Failed to fetch schedule CSV");
+        const csvText = await resp.text();
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',').map(h => h.trim());
+        function normalize(str) {
+          return str.trim().replace(/\s+/g, ' ').toLowerCase();
+        }
+        const normalizedHeaders = headers.map(normalize);
+        const dateIdx = normalizedHeaders.indexOf(normalize("Date"));
+        const visitorIdx = normalizedHeaders.indexOf(normalize("Visitor/Neutral"));
+        const homeIdx = normalizedHeaders.indexOf(normalize("Home/Neutral"));
+        if (dateIdx === -1 || visitorIdx === -1 || homeIdx === -1)
+          throw new Error("Unexpected CSV format for schedule. Headers: " + headers.join('|'));
+        const gamesForDate = [];
+        for (let i = 1; i < lines.length; i++) {
+          let row = [];
+          let match = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+          if (match) row = match.map(s => s.replace(/^"|"$/g, '').trim());
+          else row = lines[i].split(',').map(cell => cell.trim());
+          const csvDate = parseCsvDate(row[dateIdx]);
+          if (csvDate === selectedDate) {
+            const away = row[visitorIdx];
+            const home = row[homeIdx];
+            gamesForDate.push(`${away} v. ${home}`);
+          }
+        }
+        if (gamesForDate.length === 0) {
+          errorDiv.textContent = "No games scheduled for that date.";
+        } else {
+          document.getElementById('schedule').value = gamesForDate.join('\n');
+        }
+      } catch (err) {
+        errorDiv.textContent = "Error loading schedule: " + err.message;
+      } finally {
+        loadingIndicator.style.display = "none";
+      }
+    }
+
     document.getElementById('goBtn').onclick = showFavorablePlayers;
-    window.onload = loadPlayers;
+    document.getElementById('loadScheduleButton').onclick = loadScheduleForDate;
+    window.onload = function() {
+      loadPlayers();
+      setDefaultScheduleDate();
+    };
   </script>
 </body>
 </html>
